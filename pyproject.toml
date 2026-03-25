@@ -10,7 +10,7 @@ readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
 authors = [
-    { name = "Lucas Rover", email = "lucasrover@alunos.utfpr.edu.br" },
+    { name = "Yara de Souza Tadano" },
 ]
 keywords = ["lca", "openlca", "life-cycle-assessment", "characterization-factors", "lcia", "json-ld"]
 classifiers = [
