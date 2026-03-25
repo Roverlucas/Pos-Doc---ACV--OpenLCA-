@@ -21,17 +21,22 @@ A valida\c{c}\~ao foi conduzida com os 725 fatores de caracteriza\c{c}\~ao do m\
 
 \subsection{Contexto e Justificativa}
 
-A Avalia\c{c}\~ao do Ciclo de Vida (ACV) \'e uma metodologia normatizada (ISO 14040/14044) para quantificar os impactos ambientais potenciais associados a um produto, processo ou servi\c{c}o ao longo de todo o seu ciclo de vida. Na fase de Avalia\c{c}\~ao de Impacto do Ciclo de Vida (AICV), os dados do invent\'ario s\~ao convertidos em indicadores de impacto ambiental por meio de fatores de caracteriza\c{c}\~ao (CFs).
-
-Nos \'ultimos anos, a comunidade cient\'ifica brasileira tem produzido fatores de caracteriza\c{c}\~ao regionalizados para o contexto nacional, reconhecendo que fatores gen\'ericos desenvolvidos para pa\'ises europeus n\~ao capturam adequadamente as condi\c{c}\~oes ambientais, demogr\'aficas e toxicol\'ogicas do territ\'orio brasileiro. Iniciativas como a Rede de Pesquisa em Avalia\c{c}\~ao de Impacto do Ciclo de Vida (RAICV-Brazil) v\^em desenvolvendo CFs adaptados para diversas categorias de impacto, incluindo forma\c{c}\~ao de material particulado, toxicidade humana, eutrofiza\c{c}\~ao e uso de recursos h\'idricos.
-
-Contudo, existe uma lacuna significativa entre a produ\c{c}\~ao acad\^emica desses fatores e sua efetiva utiliza\c{c}\~ao por praticantes de ACV. O principal gargalo reside na integra\c{c}\~ao t\'ecnica: os fatores publicados em teses e artigos cient\'ificos s\~ao tipicamente apresentados em formato tabular (planilhas ou tabelas em PDF), enquanto o software OpenLCA --- a principal plataforma open-source de ACV, utilizada por mais de 30.000 profissionais mundialmente --- requer pacotes no formato JSON-LD com uma estrutura espec\'ifica de arquivos, identificadores \'unicos (UUIDs) e encadeamento de entidades.
-
-O processo manual de convers\~ao de centenas de fatores para este formato \'e tedioso, propenso a erros e mal documentado. Um \'unico UUID incorreto pode impedir a aplica\c{c}\~ao de todos os fatores ao invent\'ario. Al\'em disso, a compatibilidade com bases de dados existentes (como Ecoinvent) depende do reaproveitamento preciso dos UUIDs dos fluxos elementares --- uma opera\c{c}\~ao que requer conhecimentos t\'ecnicos espec\'ificos n\~ao dispon\'iveis para a maioria dos pesquisadores de ACV.
+A Avaliação do Ciclo de Vida (ACV) é uma das técnicas mais completas para avaliação de impactos ambientais de sistemas de produção que apoia a tomada de decisões e a formulação de políticas públicas (ISO 2006a, b). Ela consiste em quatro etapas: Definição do Objetivo e Escopo, Análise de Inventário do Ciclo de Vida (ICV), Avaliação de Impacto do Ciclo de Vida (AICV) e interpretação.
+A Análise de Inventário do Ciclo de Vida (ICV) envolve a coleta de dados e procedimentos de cálculo para quantificar entradas e saídas relevantes para um sistema de produto (ISO 2006a). Nesta etapa, são definidos fluxos elementares, que de forma geral, compreendem material ou energia do meio ambiente que entra no sistema em estudo ou que é liberada ao meio ambiente (ISO 2006a).
+Na terceira etapa da ACV (AICV), os fluxos inventariados do ICV são convertidos em impactos ambientais, utilizando Fatores de Caracterização (FC). Os FC mensuram o impacto de um fluxo elementar para uma categoria de AICV (Hauschild; Huijbregts, 2015) e são obtidos por meio de modelos de caracterização (RAICV, 2019). Para viabilizar os estudos de ACV, é necessário que os modelos de caracterização sejam compatíveis com os fluxos inventariados do ICV.
+Nos últimos anos, com o crescimento no uso da ACV, houve um desenvolvimento acelerado de ICVs e métodos de AICV em todo o mundo, o que resultou em uma incompatibilidade entre os bancos de dados de ICV e os métodos de AICV (Sanyé-Mengual et al., 2022). 
+Além disso, ao longo dos anos, observou-se que estudos de ACV que avaliam produtos nacionais, amparados por informações advindas de conjuntos de dados representativos de processos internacionais (não compatíveis com a realidade do país), podem gerar altas incertezas nos resultados e não alcançar a qualidade desejada ao se realizar uma ACV (Rodrigues et al., 2016). 
+Da necessidade de inventários nacionais, foi então criado o Banco Nacional de Inventários do Ciclo de Vida de Produtos Brasileiros – SICV Brasil, desenvolvido pelo Ibict/MCTI (SICV Brasil, 2024).
+Da mesma forma, esforços internacionais geraram o projeto Global Guidance on Environmental Life Cycle Impact Assessment Indicators (GLAM), que visa recomendar um método de AICV global para categorias de impacto selecionadas. Apesar disso, com o avanço das pesquisas em AICV, identificou-se a necessidade do desenvolvimento de FCs para regiões específicas (MUTEL et al., 2019; Potting, Hauschild, 2006). Neste contexto, foi formada a Rede de Pesquisa em Avaliação de Impacto do Ciclo de Vida (RAICV) no Brasil em 2014. Uma organização civil, não governamental, composta de pesquisadores de ACV engajados em adaptar e desenvolver modelos de caracterização para diferentes categorias de impacto, considerando as particularidades do Brasil (RAICV, 2019).
+A RAICV recomendou modelos de caracterização para sete categorias de impacto em seu primeiro relatório (RAICV, 2019). Além disso, estudos de regionalização foram realizados pela rede para escassez hídrica (Andrade et al., 2019), acidificação (Mendes et al., 2019) e uso da terra (Pavan, 2019).
+Em continuidade aos trabalhos, a RAICV publicou seu segundo relatório (RAICV, 2023), com o objetivo de; recomendar modelos de caracterização para uso no contexto brasileiro para mais duas categorias de impacto: smog fotoquímico e danos à saúde por formação de material particulado; apresentar um método para escolha de métodos de ponderação, auxiliando usuários de ACV na obtenção de resultados de pontuação única em seus estudos; a regionalização de FCs de ponto médio e ponto final para eutrofização de água doce e; a regionalização e análise de incertezas para escassez hídrica.
+Apesar dos esforços da RAICV na recomendação e na regionalização de fatores de caracterização (FCs) nos últimos dez anos, existe uma lacuna significativa entre a produçãoo acadêmica desses fatores e sua efetiva utilização por praticantes de ACV. O principal gargalo reside na integração técnica: os FCs publicados em teses e artigos científicos são tipicamente apresentados em formato tabular (planilhas ou tabelas em PDF), enquanto o software OpenLCA — a principal plataforma open-source de ACV, utilizada por mais de 30.000 profissionais mundialmente — requer pacotes no formato JSON-LD com uma estrutura específica de arquivos, identificadores únicos (UUIDs) e encadeamento de entidades.
+Assim, o uso de modelos de caracterização que não estão disponíveis em softwares de ACV só é possível ao se realizar um estudo de ACV manualmente com o auxílio de planilhas excel utilizando os elementos mandatórios definidos na norma ISO 14044 (ISO, 200XX) (seleção dos indicadores de categoria e modelos de caracterização, classificação dos impactos e caracterização dos impactos), como feito por Giusti et al. (2023).
+Este processo manual de conversão de centenas de fatores para este formato é tedioso, propenso a erros e mal documentado. Um único UUID incorreto pode impedir a aplicação de todos os fatores ao inventário. Além disso, a compatibilidade com bases de dados existentes (como Ecoinvent) depende do reaproveitamento adequado dos UUIDs dos fluxos elementares — uma operação que requer conhecimentos técnicos específicos, não disponíveis para a maioria dos pesquisadores e utilizadores da ACV.
 
 \subsection{Hip\'otese de Trabalho}
 
-A automatiza\c{c}\~ao do pipeline de convers\~ao de fatores de caracteriza\c{c}\~ao, por meio de uma ferramenta computacional aberta, configur\'avel e interoper\'avel com bases de dados existentes, pode reduzir significativamente a barreira entre a produ\c{c}\~ao acad\^emica de m\'etodos LCIA regionalizados e sua ado\c{c}\~ao por praticantes de ACV.
+A automatização do pipeline de conversão de fatores de caracterização, por meio de uma ferramenta computacional aberta, configurável e interoperável com bases de dados existentes, pode reduzir significativamente a barreira entre a produção acadêmica de métodos de AICV regionalizados e sua adoção por praticantes de ACV.
 
 % ============================================================================
 \section{OBJETIVOS}
@@ -39,7 +44,7 @@ A automatiza\c{c}\~ao do pipeline de convers\~ao de fatores de caracteriza\c{c}\
 
 \subsection{Objetivo Geral}
 
-Desenvolver uma ferramenta computacional open-source que automatize a convers\~ao de fatores de caracteriza\c{c}\~ao publicados em planilhas Excel para pacotes JSON-LD import\'aveis no software OpenLCA, com suporte a regionaliza\c{c}\~ao e compatibilidade com a base de dados Ecoinvent.
+Desenvolver uma ferramenta computacional open-source que automatize a convers\~ao de fatores de caracteriza\c{c}\~ao publicados em planilhas Excel para pacotes JSON-LD import\'aveis no software OpenLCA, compatível com a base de dados Ecoinvent.
 
 \subsection{Objetivos Espec\'ificos}
 
@@ -47,7 +52,7 @@ Desenvolver uma ferramenta computacional open-source que automatize a convers\~a
     \item Mapear e documentar a estrutura completa do formato JSON-LD do OpenLCA (schema v2) para m\'etodos LCIA, incluindo as rela\c{c}\~oes de encadeamento entre entidades.
     \item Implementar um mecanismo de reaproveitamento de UUIDs a partir de bases de refer\^encia (Ecoinvent), garantindo que os fatores gerados se conectem automaticamente aos processos de invent\'ario existentes no OpenLCA.
     \item Desenvolver uma interface de linha de comando (CLI) acess\'ivel a pesquisadores sem forma\c{c}\~ao em programa\c{c}\~ao, com configura\c{c}\~ao via arquivo YAML e valida\c{c}\~ao autom\'atica dos dados de entrada.
-    \item Validar a ferramenta com dados reais do m\'etodo RAICV-Brazil para forma\c{c}\~ao de material particulado (PMFP), comparando o pacote gerado com o pacote produzido pelo processo manual original.
+    \item Validar a ferramenta com dados reais do m\'etodo RAICV-Brazil PM para forma\c{c}\~ao de material particulado (PMFP), comparando o pacote gerado com o pacote produzido pelo processo manual original.
     \item Documentar o c\'odigo-fonte de forma educativa, visando a forma\c{c}\~ao de recursos humanos na interface entre ci\^encias ambientais e engenharia de software.
     \item Publicar a ferramenta em reposit\'orio aberto (GitHub) sob licen\c{c}a permissiva (MIT), acompanhada de documenta\c{c}\~ao t\'ecnica, testes automatizados e exemplos de configura\c{c}\~ao para m\'ultiplas categorias de impacto.
 \end{enumerate}
@@ -58,19 +63,39 @@ Desenvolver uma ferramenta computacional open-source que automatize a convers\~a
 
 \subsection{Avalia\c{c}\~ao de Impacto do Ciclo de Vida no contexto brasileiro}
 
-A AICV no Brasil tem avan\c{c}ado significativamente na \'ultima d\'ecada, impulsionada pelo Programa Brasileiro de Avalia\c{c}\~ao do Ciclo de Vida (PBACV), institu\'ido pela Resolu\c{c}\~ao CONMETRO n\textdegree\ 04/2010, e pela cria\c{c}\~ao da Rede de Pesquisa em Avalia\c{c}\~ao de Impacto do Ciclo de Vida (RAICV-Brazil). A RAICV-Brazil congrega pesquisadores de diversas institui\c{c}\~oes brasileiras com o objetivo de desenvolver fatores de caracteriza\c{c}\~ao regionalizados para as condi\c{c}\~oes ambientais do territ\'orio nacional.
+A AICV no Brasil tem avan\c{c}ado significativamente na \'ultima d\'ecada, impulsionada pelo Programa Brasileiro de Avalia\c{c}\~ao do Ciclo de Vida (PBACV), institu\'ido pela Resolu\c{c}\~ao CONMETRO n\textdegree\ 04/2010, pela Associação Brasileira de ACV (ABCV) e pela cria\c{c}\~ao da Rede de Pesquisa em Avalia\c{c}\~ao de Impacto do Ciclo de Vida (RAICV-Brazil). A RAICV-Brazil congrega pesquisadores de diversas institui\c{c}\~oes brasileiras com o objetivo de desenvolver fatores de caracteriza\c{c}\~ao regionalizados para as condi\c{c}\~oes ambientais do territ\'orio nacional.
 
-Entre os avan\c{c}os recentes, destacam-se os trabalhos de Giusti (2025), que desenvolveu fatores de caracteriza\c{c}\~ao para efeitos na sa\'ude humana por forma\c{c}\~ao de material particulado no Brasil, regionalizados para os 27 estados. Estes fatores foram calculados utilizando o modelo de destino e exposi\c{c}\~ao adaptado para as condi\c{c}\~oes brasileiras, resultando em 725 CFs expressos em DALY/kg (\textit{Disability-Adjusted Life Years} por quilograma de emiss\~ao).
+Entre os avan\c{c}os recentes, destacam-se as publicações dos relatórios I e II da RAICV (RAICV, 2019 e 2026). Esses relatórios evidenciam um progresso significativo da ACV no contexto brasileiro, ao contribuírem para a adaptação e recomendação de modelos de AICV aplicáveis a estudos envolvendo o Brasil.
+
+Além disso, foram estabelecidos critérios padronizados para a seleção de modelos de AICV - incluindo escopo, robutez científica e nível de regionalização - o que aumenta a consistência metodológica dos estudos, auxilia praticantes de ACV na escolha de modelos mais adequados à realidade brasileira e fortalece a confiabilidade dos resultados.
+
+No primeiro relatório (RAICV, 2019), foram abordadas as categorias de impacto; acidificação, eutrofização, recursos bióticos e abióticos, escassez hídrica, serviços ecossistêmicos e métodos de contabilização de recursos (RAM). Já no segundo relatório (RAICV 2026), houve ampliação o escopo, com a inclusão das categorias de smog fotoquímico e formação de material particulado, além de avanços na regionalização - como o desenvolvimento de métodos regionalizados para escassez hídrica e eutrofização - e a incorporação de capítulos dedicados a métodos de ponderação e análise de incertezas.
+
+Outro avanço relevante a ser destacado é o trabalho desenvolvido por Giusti (2025), no qual foram desenvolvidos FCs para os efeitos na sa\'ude humana por forma\c{c}\~ao de material particulado no Brasil, com regionalização para os 27 estados brasileiros. Este estudo de doutorado foi desenvolvido sob coorientação da Profa. Dra. Yara de Souza Tadano.
 
 \subsection{Software OpenLCA e o formato JSON-LD}
 
-O OpenLCA \'e o principal software open-source para ACV, desenvolvido pela GreenDelta GmbH (Berlin, Alemanha). Na vers\~ao atual, o software utiliza o formato JSON-LD (\textit{JavaScript Object Notation for Linked Data}) como formato padr\~ao de importa\c{c}\~ao e exporta\c{c}\~ao de dados. Este formato organiza as entidades em uma estrutura hier\'arquica de arquivos JSON, cada um identificado por um UUID (\textit{Universally Unique Identifier}) vers\~ao 4.
+O OpenLCA \'e o principal software open-source para ACV, desenvolvido  em 2007, pela GreenDelta GmbH (Berlin, Alemanha). Na vers\~ao atual, o software utiliza o formato JSON-LD (\textit{JavaScript Object Notation for Linked Data}) como formato padr\~ao de importa\c{c}\~ao e exporta\c{c}\~ao de dados. Este formato organiza as entidades em uma estrutura hier\'arquica de arquivos JSON, cada um identificado por um UUID (\textit{Universally Unique Identifier}) vers\~ao 4.
 
 A estrutura de um pacote LCIA no formato JSON-LD do OpenLCA inclui: (i) unidades de medida; (ii) grupos de unidades; (iii) propriedades de fluxo; (iv) fluxos elementares; (v) categorias de impacto com seus fatores de caracteriza\c{c}\~ao; e (vi) m\'etodos LCIA. Cada entidade referencia as demais por UUID, criando uma cadeia de depend\^encias que deve ser consistente para que o pacote seja importado corretamente.
 
 \subsection{Interoperabilidade com Ecoinvent}
 
-A base de dados Ecoinvent (\textit{Swiss Centre for Life Cycle Inventories}) \'e a base de invent\'ario de ciclo de vida mais utilizada mundialmente. Cada fluxo elementar na base possui um UUID \'unico e est\'avel entre vers\~oes. Para que os fatores de caracteriza\c{c}\~ao de um m\'etodo LCIA sejam aplicados automaticamente aos processos do invent\'ario Ecoinvent no OpenLCA, \'e imprescind\'ivel que os UUIDs dos fluxos no m\'etodo coincidam com os UUIDs da base.
+A base de dados Ecoinvent (\textit{Swiss Centre for Life Cycle Inventories}) \'e a base de invent\'ario de ciclo de vida mais utilizada mundialmente. Cada fluxo elementar na base possui um UUID \'unico e est\'avel entre vers\~oes. Para que os fatores de caracteriza\c{c}\~ao de um m\'etodo de AICV sejam aplicados automaticamente aos processos do invent\'ario Ecoinvent no OpenLCA, \'e imprescind\'ivel que os UUIDs dos fluxos no m\'etodo coincidam com os UUIDs da base.
+
+\subsection{Categoria de Impacto Formação de Material Particulado}
+
+O PM é um poluente atmosférico composto por uma mistura de substâncias orgânicas e inorgânicas suspensas no ar (WHO, 2018) que, se inalado, pode se depositar em diferentes níveis do sistema respiratório, podendo causar diversos efeitos negativos à saúde humana, como asma, bronquite, até mesmo a morte (Lin et al., 2020; Achilleos et al., 2017).
+
+As emissões antropogênicas de PM podem ser avaliadas por meio da ACV, e estudos brasileiros constantemente consideram essa categoria de impacto (DU et al., 2018; MAGA et al., 2019; SILVA et al., 2018; Giusti et al., 2023). Entretanto, os principais modelos e métodos de caracterização foram desenvolvidos para Europa (Hosftetter 1998; van Zelm et al., 2008), América do Norte (Bare 2011; Humbert et al., 2009), de forma global (Fantke et al., 2015; Frischknecht and Jolliet, 2016; van Zelm et al., 2016)) ou para regiões específicas, como por exemplo, para o Japão (Itsubo e Inaba, 2012), o que pode aumentar as incertezas para o contexto brasileiro, conforme observado por Cheli et al. (2019) e Giusti et al. (2021).
+
+A variedade de modelos e métodos de caracterização disponíveis torna a decisão dos praticantes de ACV um desafio, pois a escolha de modelos distintos pode resultar em variações significativas nos resultados de um mesmo estudo de caso de ACV (Silva et al., 2019). Por exemplo, Owsianiak et al. (2014) compararam os resultados de um estudo de ACV para quatro designs de janelas para construções residenciais usando os seguintes métodos de AICV: ILCD 2009, IMPACT 2002+, e ReCiPe 2008. Os autores identificaram diferenças de uma ordem de grandeza nos impactos decorrentes da escolha do modelo de caracterização na categoria de impacto de formação de MP.
+
+Frequentemente, o Brasil é considerado em fatores de caracterização globais, não se desenvolvendo modelos específicos para o contexto brasileiro. Diante disso, Giusti et al. (2022) realizaram uma revisão crítica e recomendação de modelos de caracterização para a categoria de formação de MP para o Brasil. Os autores recomendaram o uso dos modelos de van Zelm et al. (2016), Fantke et al. (2017, 2019), Oberschelp et al. (2020) e Tang et al. (xxx). Entretanto, enfatizam que os modelos apresentam importantes limitações e que fatores de caracterização mais precisos e representativos das particularidades do Brasil são necessários para reduzir as incertezas nos estudos de ACV. Recentemente, Giusti (2025) desenvolveu FCs regionalizados para os 27 estados brasileiros e 5 substâncias (PM2,5, SOx, NOx, NH3 e compostos orgânicos voláteis – VOC), considerando a categoria de formação de PM.
+
+Os FCs obtidos por Giusti (2025) em sua tese de doutorado, sob coorientação da presente candidata, foram compilados para a elaboração do Método RAICV-Brazil PM, que será utilizado para validar a ferramenta desenvolvida neste projeto.
+
+
 
 \subsection{Lacuna identificada}
 
@@ -85,7 +110,7 @@ N\~ao foram identificadas, na literatura ou em reposit\'orios de c\'odigo aberto
 O desenvolvimento e valida\c{c}\~ao da ferramenta utilizaram os seguintes dados:
 
 \begin{itemize}
-    \item \textbf{Fatores de caracteriza\c{c}\~ao:} 725 CFs do m\'etodo RAICV-Brazil para forma\c{c}\~ao de material particulado (PMFP), desenvolvidos por Giusti (2025). Os fatores cobrem 145 subst\^ancias, 5 compartimentos ambientais de emiss\~ao e 28 localiza\c{c}\~oes (Brasil como um todo e cada um dos 27 estados), expressos em DALY/kg.
+    \item \textbf{Fatores de caracteriza\c{c}\~ao:} 725 CFs do m\'etodo RAICV-Brazil PM para forma\c{c}\~ao de material particulado (PMFP), desenvolvidos por Giusti (2025). Os fatores cobrem 5 subst\^ancias e 28 localiza\c{c}\~oes (Brasil como um todo e cada um dos 27 estados), expressos em DALY/kg. Para ampliar a utilização dos FCs, o cadastro foi realizado considerando 5 compartimentos ambientais de emiss\~ao, sendo feita a repetição dos FCs de cada estado e cada substância entre os compartimentos.
     \item \textbf{Base de refer\^encia Ecoinvent:} Exporta\c{c}\~ao JSON-LD dos fluxos elementares da base Ecoinvent v3, contendo 8.902 fluxos com seus UUIDs.
     \item \textbf{Estrutura modelo OpenLCA:} Pacote JSON-LD base contendo a estrutura de pastas e o manifesto \texttt{openlca.json} exigido pelo software.
 \end{itemize}
@@ -167,9 +192,9 @@ A ferramenta \texttt{olca-cf-converter} v1.0.0 foi conclu\'ida e publicada em re
 \url{https://github.com/Roverlucas/Pos-Doc---ACV--OpenLCA-}
 \end{center}
 
-\subsection{Valida\c{c}\~ao com dados RAICV-Brazil}
+\subsection{Valida\c{c}\~ao com dados do Método RAICV-Brazil PM}
 
-A valida\c{c}\~ao principal foi conduzida com os 725 CFs do m\'etodo RAICV-Brazil PMFP (Giusti, 2025):
+A valida\c{c}\~ao principal foi conduzida com os 725 CFs do m\'etodo RAICV-Brazil PM (Giusti, 2025):
 
 \begin{table}[H]
 \centering
