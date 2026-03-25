@@ -1,15 +1,27 @@
 """
-Core conversion engine: Excel → OpenLCA JSON-LD ZIP package.
+converter.py — Motor de conversao: Excel -> pacote OpenLCA JSON-LD (ZIP).
 
-This module is the heart of olca-cf-converter. It reads characterization factors
-from a spreadsheet and produces a complete OpenLCA-importable ZIP containing:
-  - Unit definitions (input + output)
-  - Unit groups
-  - Flow properties
-  - Elementary flows (reusing Ecoinvent IDs when available)
-  - LCIA impact category with all characterization factors
-  - LCIA method referencing the category
-  - openlca.json manifest (schema version 2)
+Este e o modulo central do olca-cf-converter. Ele orquestra todo o pipeline
+de conversao em 12 passos sequenciais:
+
+    [Excel .xlsx] --> [Validacao] --> [Criacao de entidades] --> [ZIP final]
+
+PIPELINE COMPLETO:
+    Step 1:  Extrair estrutura base do modelo (opcional)
+    Step 2:  Carregar IDs de referencia do Ecoinvent (opcional)
+    Step 3:  Ler e validar a planilha Excel
+    Step 4:  Criar unidades de entrada (ex: kg)
+    Step 5:  Criar unidades de saida (ex: DALY)
+    Step 6:  Escrever arquivos JSON de unidades, grupos e propriedades
+    Step 7:  Criar flows (substancias), reusando IDs quando possivel
+    Step 8:  Construir mapa de UUIDs (nome, categoria, localizacao) -> UUID
+    Step 9:  Criar categoria de impacto com todos os fatores de caracterizacao
+    Step 10: Criar metodo LCIA
+    Step 11: Escrever manifesto openlca.json
+    Step 12: Empacotar tudo em um ZIP
+
+O resultado e um arquivo .zip que pode ser importado diretamente no OpenLCA
+via File -> Import -> Linked Data (JSON-LD).
 """
 
 from __future__ import annotations
@@ -22,6 +34,7 @@ from pathlib import Path
 
 import pandas as pd
 
+# Importamos as classes de schemas.py que representam as entidades do OpenLCA
 from .schemas import (
     FlowDef,
     FlowPropertyDef,
@@ -36,18 +49,60 @@ from .schemas import (
 from .validator import validate_excel
 
 
+# =============================================================================
+# FUNCAO AUXILIAR: ESCREVER JSON
+# =============================================================================
+# No OpenLCA, cada entidade e salva como um arquivo {uuid}.json dentro da
+# pasta correspondente (ex: flows/9990b51b-7023-....json). Esta funcao
+# simplifica essa operacao.
+# =============================================================================
+
 def _write_json(directory: Path, uid: str, data: dict) -> None:
-    """Write a JSON file named {uid}.json inside directory."""
+    """Escreve um arquivo JSON nomeado {uid}.json dentro do diretorio.
+
+    Args:
+        directory: Pasta onde o arquivo sera criado (ex: flows/, units/)
+        uid: UUID da entidade — sera o nome do arquivo
+        data: Dicionario Python que sera serializado como JSON
+    """
     path = directory / f"{uid}.json"
     with open(path, "w", encoding="utf-8") as f:
+        # indent=2 para legibilidade; ensure_ascii=False para acentos
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 
-def _load_reference_flows(ref_zip: str | Path | None) -> dict[tuple[str, str], str]:
-    """Load existing flow IDs from a reference ZIP (e.g., Ecoinvent export).
+# =============================================================================
+# FUNCAO AUXILIAR: CARREGAR FLOWS DE REFERENCIA (ECOINVENT)
+# =============================================================================
+# Esta funcao e o SEGREDO para que os fatores de caracterizacao funcionem com
+# inventarios existentes no OpenLCA. Ela le os flows de um ZIP de referencia
+# (tipicamente uma exportacao do Ecoinvent) e extrai os UUIDs.
+#
+# COMO FUNCIONA O MATCHING:
+#   Para cada flow no ZIP de referencia, guardamos a tupla (nome, categoria)
+#   e o UUID correspondente. Depois, quando criamos os flows do nosso metodo,
+#   verificamos se a mesma tupla (nome, categoria) existe no mapa. Se existir,
+#   REUSAMOS o UUID do Ecoinvent em vez de gerar um novo.
+#
+# POR QUE ISSO E CRITICO:
+#   O OpenLCA conecta fatores de caracterizacao a processos do inventario
+#   PELO UUID, nao pelo nome. Se o UUID nao bater, o fator nao e aplicado —
+#   mesmo que o nome da substancia seja identico.
+# =============================================================================
 
-    Returns a dict mapping (flow_name, category) -> existing UUID.
+def _load_reference_flows(ref_zip: str | Path | None) -> dict[tuple[str, str], str]:
+    """Carrega UUIDs de flows existentes de um ZIP de referencia.
+
+    Args:
+        ref_zip: Caminho para o ZIP (ou diretorio) com flows de referencia.
+                 Tipicamente uma exportacao JSON-LD do Ecoinvent.
+                 Se None, retorna dict vazio (todos os IDs serao novos).
+
+    Returns:
+        Dicionario mapeando (nome_do_flow, categoria) -> UUID existente.
+        Exemplo: ("Ammonia", "Elementary flows/Emission to air/unspecified") -> "9990b51b-..."
     """
+    # Se nao foi fornecido um ZIP de referencia, nao ha IDs para reusar
     if ref_zip is None:
         return {}
 
@@ -57,12 +112,15 @@ def _load_reference_flows(ref_zip: str | Path | None) -> dict[tuple[str, str], s
         return {}
 
     existing: dict[tuple[str, str], str] = {}
+    # Pasta temporaria para extrair o ZIP — usa PID para evitar colisoes
     ref_dir = Path(f"_ref_temp_{os.getpid()}")
 
     try:
+        # Aceita tanto ZIP quanto diretorio ja extraido
         if ref_zip.is_dir():
             flows_dir = ref_zip / "flows"
         else:
+            # Extrai o ZIP para pasta temporaria
             shutil.rmtree(ref_dir, ignore_errors=True)
             ref_dir.mkdir(exist_ok=True)
             with zipfile.ZipFile(ref_zip, "r") as zf:
@@ -73,31 +131,49 @@ def _load_reference_flows(ref_zip: str | Path | None) -> dict[tuple[str, str], s
             print(f"  ⚠ No 'flows/' folder in reference. Generating new IDs.")
             return {}
 
+        # Le cada arquivo JSON na pasta flows/ e extrai (nome, categoria) -> UUID
         for fn in flows_dir.iterdir():
             if fn.suffix != ".json":
                 continue
             try:
                 with open(fn, "r", encoding="utf-8") as f:
                     data = json.load(f)
+                # Verifica se e realmente um Flow (e nao outro tipo de entidade)
                 if data.get("@type") == "Flow":
                     name = data.get("name")
                     cat = data.get("category")
                     fid = data.get("@id")
                     if name and cat and fid:
+                        # setdefault: se ja existe, nao sobrescreve (primeiro encontrado ganha)
                         existing.setdefault((name, cat), fid)
             except Exception:
+                # Ignora arquivos com problemas (corrompidos, formato errado)
                 continue
 
         print(f"  ✓ Loaded {len(existing)} reference flow IDs")
     finally:
+        # SEMPRE limpa a pasta temporaria, mesmo se der erro
         if ref_dir.exists() and not ref_zip.is_dir():
             shutil.rmtree(ref_dir, ignore_errors=True)
 
     return existing
 
 
+# =============================================================================
+# FUNCAO AUXILIAR: EXTRAIR ESTRUTURA BASE DO MODELO
+# =============================================================================
+# Alguns metodos LCIA partem de uma estrutura base (modelo) que ja contem
+# pastas e o arquivo openlca.json. Esta funcao extrai essa base para a pasta
+# temporaria de trabalho. Se nao houver modelo, a estrutura e criada do zero.
+# =============================================================================
+
 def _extract_model_base(model_zip: str | Path | None, temp_dir: Path) -> None:
-    """Extract model ZIP as the base structure, or create minimal structure."""
+    """Extrai o ZIP modelo como estrutura base, ou cria do zero.
+
+    Args:
+        model_zip: Caminho para o ZIP modelo (ou None para criar do zero)
+        temp_dir: Pasta temporaria onde a estrutura sera montada
+    """
     if model_zip is None:
         return
 
@@ -106,8 +182,8 @@ def _extract_model_base(model_zip: str | Path | None, temp_dir: Path) -> None:
         print(f"  ⚠ Model ZIP not found: {model_zip}. Creating structure from scratch.")
         return
 
+    # Aceita tanto ZIP quanto diretorio
     if model_zip.is_dir():
-        # Copy directory contents
         for item in model_zip.iterdir():
             dest = temp_dir / item.name
             if item.is_dir():
@@ -121,30 +197,53 @@ def _extract_model_base(model_zip: str | Path | None, temp_dir: Path) -> None:
     print(f"  ✓ Base structure loaded from model")
 
 
+# =============================================================================
+# FUNCAO PRINCIPAL: CONVERTER
+# =============================================================================
+# Orquestra os 12 passos do pipeline. Recebe um MethodConfig (parseado do
+# YAML) e retorna o caminho do ZIP gerado.
+#
+# A funcao trabalha em uma pasta temporaria (_olca_build_{pid}/) que e SEMPRE
+# removida ao final, mesmo em caso de erro (bloco finally).
+# =============================================================================
+
 def convert(config: MethodConfig) -> Path:
-    """Execute the full conversion pipeline.
+    """Executa o pipeline completo de conversao.
 
     Args:
-        config: A MethodConfig with all parameters.
+        config: MethodConfig com todos os parametros (parseado do YAML).
 
     Returns:
-        Path to the generated ZIP file.
+        Path para o arquivo ZIP gerado, pronto para importar no OpenLCA.
     """
     output_path = Path(config.output_zip)
+    # Pasta temporaria com PID para evitar colisoes entre execucoes paralelas
     temp_dir = Path(f"_olca_build_{os.getpid()}")
 
     try:
-        # Clean slate
+        # Limpa qualquer resto de execucao anterior
         shutil.rmtree(temp_dir, ignore_errors=True)
         temp_dir.mkdir(exist_ok=True)
 
-        # Step 1: Extract model base (optional)
+        # =================================================================
+        # STEP 1: Extrair estrutura base do modelo (opcional)
+        # =================================================================
+        # Se o usuario forneceu um model_zip, extrai como ponto de partida.
+        # Isso permite herdar configuracoes ou estruturas pre-existentes.
         _extract_model_base(config.model_zip, temp_dir)
 
-        # Step 2: Load reference flows for ID reuse (optional)
+        # =================================================================
+        # STEP 2: Carregar IDs de referencia para reuso (opcional)
+        # =================================================================
+        # Le os UUIDs dos flows do Ecoinvent (ou outra base) para que os
+        # nossos flows usem os MESMOS UUIDs — garantindo compatibilidade.
         existing_flows = _load_reference_flows(config.reference_zip)
 
-        # Step 3: Read and validate Excel
+        # =================================================================
+        # STEP 3: Ler e validar a planilha Excel
+        # =================================================================
+        # A validacao verifica colunas, tipos numericos e nomes nao vazios
+        # ANTES de iniciar a conversao (fail-fast).
         col = config.excel_columns
         df = validate_excel(
             config.excel_path,
@@ -152,7 +251,12 @@ def convert(config: MethodConfig) -> Path:
         )
         print(f"  ✓ Loaded {len(df)} characterization factors from Excel")
 
-        # Step 4: Create input units (what goes INTO the environment, e.g., kg)
+        # =================================================================
+        # STEP 4: Criar unidades de ENTRADA
+        # =================================================================
+        # A unidade de entrada e aquela em que a emissao e medida.
+        # Tipicamente "kg" (massa emitida ao ambiente).
+        # Criamos a cadeia completa: Unit -> UnitGroup -> FlowProperty
         input_unit = UnitDef(name=config.input_unit_name)
         input_unit_group = UnitGroupDef(
             name=f"{config.input_property_name} units",
@@ -163,7 +267,13 @@ def convert(config: MethodConfig) -> Path:
             unit_group=input_unit_group,
         )
 
-        # Step 5: Create output units (the impact, e.g., DALY, kg CO2-eq)
+        # =================================================================
+        # STEP 5: Criar unidades de SAIDA (impacto)
+        # =================================================================
+        # A unidade de saida e aquela em que o impacto e medido.
+        # Exemplos: "DALY" (anos de vida perdidos), "kg CO2-Eq", "CTUe"
+        # A categoria muda conforme o tipo: endpoint usa "Impact category
+        # indicators", midpoint usa "Technical unit groups".
         output_unit = UnitDef(name=config.output_unit_name)
         output_unit_group = UnitGroupDef(
             name=f"{config.output_property_name} units",
@@ -176,21 +286,29 @@ def convert(config: MethodConfig) -> Path:
             category="Impact category indicators" if config.category_type == "endpoint" else "Technical flow properties",
         )
 
-        # Step 6: Write unit/group/property files
+        # =================================================================
+        # STEP 6: Escrever arquivos JSON de unidades, grupos e propriedades
+        # =================================================================
+        # Cria as 6 pastas que o OpenLCA espera encontrar no ZIP e escreve
+        # os arquivos JSON de cada entidade de suporte.
+
+        # Mapa de pastas do pacote OpenLCA
         dirs = {
-            "units": temp_dir / "units",
-            "unit_groups": temp_dir / "unit_groups",
-            "flow_properties": temp_dir / "flow_properties",
-            "flows": temp_dir / "flows",
-            "lcia_categories": temp_dir / "lcia_categories",
-            "lcia_methods": temp_dir / "lcia_methods",
+            "units": temp_dir / "units",                    # Unidades (kg, DALY)
+            "unit_groups": temp_dir / "unit_groups",        # Grupos de unidades
+            "flow_properties": temp_dir / "flow_properties",# Propriedades de fluxo
+            "flows": temp_dir / "flows",                    # Substancias (Ammonia, NOx)
+            "lcia_categories": temp_dir / "lcia_categories",# Categorias de impacto
+            "lcia_methods": temp_dir / "lcia_methods",      # Metodos LCIA
         }
+        # Recria cada pasta do zero (garante estado limpo)
         for d in dirs.values():
             if d.exists():
                 shutil.rmtree(d)
             d.mkdir(parents=True, exist_ok=True)
 
-        # Units
+        # --- Escrever unidades ---
+        # Cada unidade e salva como {uuid}.json na pasta units/
         _write_json(dirs["units"], input_unit.uid, {
             "@type": "Unit", "@id": input_unit.uid,
             "name": input_unit.name, "referenceUnitName": input_unit.name,
@@ -202,15 +320,28 @@ def convert(config: MethodConfig) -> Path:
             "synonyms": [], "internalId": None, "default": True,
         })
 
-        # Unit groups
+        # --- Escrever grupos de unidades ---
         _write_json(dirs["unit_groups"], input_unit_group.uid, input_unit_group.to_dict())
         _write_json(dirs["unit_groups"], output_unit_group.uid, output_unit_group.to_dict())
 
-        # Flow properties
+        # --- Escrever propriedades de fluxo ---
         _write_json(dirs["flow_properties"], input_flow_property.uid, input_flow_property.to_dict())
         _write_json(dirs["flow_properties"], output_flow_property.uid, output_flow_property.to_dict())
 
-        # Step 7: Create flows (reusing IDs when possible)
+        # =================================================================
+        # STEP 7: Criar flows (substancias), reusando IDs quando possivel
+        # =================================================================
+        # Para cada combinacao unica de (nome, categoria) na planilha:
+        #   1. Verifica se existe no mapa de referencia (Ecoinvent)
+        #   2. Se sim: reutiliza o UUID (compatibilidade com inventarios)
+        #   3. Se nao: gera um novo UUID
+        #   4. Escreve o arquivo JSON do flow
+        #
+        # IMPORTANTE: Deduplicamos por (nome, categoria), NAO por
+        # (nome, categoria, localizacao). A mesma substancia no mesmo
+        # compartimento em localizacoes diferentes e o MESMO flow.
+        # A regionalizacao acontece no nivel do fator, nao do flow.
+
         unique_flows = df[[col["flow"], col["category"]]].drop_duplicates()
         name_cat_to_id: dict[tuple[str, str], str] = {}
 
@@ -219,9 +350,11 @@ def convert(config: MethodConfig) -> Path:
             category = row[col["category"]]
             key = (flow_name, category)
 
+            # Tenta reusar UUID do Ecoinvent; se nao encontrar, gera novo
             flow_id = existing_flows.get(key, new_uuid())
             name_cat_to_id[key] = flow_id
 
+            # Cria o objeto FlowDef e escreve como JSON
             flow_def = FlowDef(
                 name=flow_name,
                 category=category,
@@ -230,11 +363,17 @@ def convert(config: MethodConfig) -> Path:
             )
             _write_json(dirs["flows"], flow_id, flow_def.to_dict())
 
+        # Relatorio de reuso
         reused = sum(1 for k in name_cat_to_id if k in existing_flows)
         created = len(name_cat_to_id) - reused
         print(f"  ✓ Flows: {reused} reused IDs + {created} new = {len(name_cat_to_id)} total")
 
-        # Step 8: Build flow UUID map (name, category, location) -> id
+        # =================================================================
+        # STEP 8: Construir mapa completo (nome, categoria, localizacao) -> UUID
+        # =================================================================
+        # Este mapa expande o anterior para incluir a localizacao. Ele sera
+        # usado no Step 9 para conectar cada linha do Excel ao flow correto.
+        # Multiplas localizacoes apontam para o MESMO UUID de flow.
         flow_uuid_map: dict[tuple[str, str, str], str] = {}
         unique_full = df[[col["flow"], col["category"], col["location"]]].drop_duplicates()
         for _, row in unique_full.iterrows():
@@ -243,7 +382,16 @@ def convert(config: MethodConfig) -> Path:
             if fid:
                 flow_uuid_map[(row[col["flow"]], row[col["category"]], row[col["location"]])] = fid
 
-        # Step 9: Create impact category with all CFs
+        # =================================================================
+        # STEP 9: Criar categoria de impacto com TODOS os fatores
+        # =================================================================
+        # Aqui e onde o conteudo principal e montado. Para CADA LINHA do
+        # Excel, criamos um ImpactFactorDef com:
+        #   - O valor numerico do CF
+        #   - A referencia ao flow (pelo UUID)
+        #   - A unidade e propriedade de entrada
+        #
+        # Todos os fatores ficam dentro de um unico ImpactCategoryDef.
         impact_category = ImpactCategoryDef(
             name=config.category_name,
             description=config.category_description,
@@ -256,11 +404,12 @@ def convert(config: MethodConfig) -> Path:
             key = (row[col["flow"]], row[col["category"]], row[col["location"]])
             flow_id = flow_uuid_map.get(key)
 
+            # Se nao encontrou UUID para esta linha, pula (e conta como skipped)
             if not flow_id:
                 skipped += 1
                 continue
 
-            # Find the FlowDef's id
+            # Cria a referencia ao flow usando o UUID correto
             key_nc = (row[col["flow"]], row[col["category"]])
             flow_def = FlowDef(
                 name=row[col["flow"]],
@@ -269,6 +418,7 @@ def convert(config: MethodConfig) -> Path:
                 uid=name_cat_to_id[key_nc],
             )
 
+            # Adiciona o fator de caracterizacao a categoria
             impact_category.impact_factors.append(
                 ImpactFactorDef(
                     value=float(row[col["factor"]]),
@@ -281,10 +431,15 @@ def convert(config: MethodConfig) -> Path:
         if skipped > 0:
             print(f"  ⚠ Skipped {skipped} unmapped factors")
 
+        # Escreve o JSON da categoria (contem o array impactFactors[] completo)
         _write_json(dirs["lcia_categories"], impact_category.uid, impact_category.to_dict())
         print(f"  ✓ Impact category: {len(impact_category.impact_factors)} factors")
 
-        # Step 10: Create LCIA method
+        # =================================================================
+        # STEP 10: Criar metodo LCIA
+        # =================================================================
+        # O metodo e a entidade de nivel mais alto — e o que aparece na lista
+        # de metodos do OpenLCA. Ele referencia a(s) categoria(s) pelo UUID.
         method = ImpactMethodDef(
             name=config.method_name,
             description=config.method_description,
@@ -293,36 +448,42 @@ def convert(config: MethodConfig) -> Path:
         _write_json(dirs["lcia_methods"], method.uid, method.to_dict())
         print(f"  ✓ Method: {config.method_name}")
 
-        # Step 11: Write openlca.json manifest
+        # =================================================================
+        # STEP 11: Escrever manifesto openlca.json
+        # =================================================================
+        # O arquivo openlca.json DEVE estar na RAIZ do ZIP. Sem ele, o
+        # OpenLCA nao reconhece o pacote como importavel.
+        # schemaVersion: 2 e a versao atual do formato JSON-LD do OpenLCA.
         _write_json(temp_dir, "openlca", {"schemaVersion": 2})
-        # Rename openlca.{uuid}.json -> openlca.json
-        openlca_file = temp_dir / "openlca.json"
-        generated = temp_dir / f"openlca.json"
-        if not openlca_file.exists():
-            # The _write_json wrote openlca.json already via the uid "openlca"
-            # Actually we need to handle this differently
-            pass
-        # Fix: remove the uuid-named file and write directly
+        # Corrige o nome do arquivo (deve ser exatamente "openlca.json")
         for f in temp_dir.glob("openlca*.json"):
             f.unlink()
         with open(temp_dir / "openlca.json", "w") as f:
             json.dump({"schemaVersion": 2}, f)
 
-        # Step 12: Package into ZIP
+        # =================================================================
+        # STEP 12: Empacotar tudo em ZIP
+        # =================================================================
+        # Percorre recursivamente a pasta temporaria e adiciona cada arquivo
+        # ao ZIP com o caminho relativo correto (ex: flows/abc-123.json).
+        # Usa compressao ZIP_DEFLATED para reduzir o tamanho.
         with zipfile.ZipFile(output_path, "w", zipfile.ZIP_DEFLATED) as zf:
             for root, _, files in os.walk(temp_dir):
                 for file in files:
                     full = Path(root) / file
+                    # arcname = caminho dentro do ZIP (relativo a raiz)
                     arcname = full.relative_to(temp_dir)
                     zf.write(full, arcname)
 
-        # Count files in ZIP
+        # Conta quantos arquivos ficaram no ZIP para o relatorio
         with zipfile.ZipFile(output_path, "r") as zf:
             file_count = len(zf.namelist())
 
         print(f"  ✓ Output: {output_path} ({file_count} files)")
 
     finally:
+        # SEMPRE remove a pasta temporaria, mesmo se der erro no meio
+        # Isso evita lixo no disco do usuario
         shutil.rmtree(temp_dir, ignore_errors=True)
 
     return output_path
