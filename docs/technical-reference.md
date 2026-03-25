@@ -1,6 +1,6 @@
 # Referencia Tecnica
 
-Documentacao tecnica detalhada do codigo-fonte do `olca-cf-converter`. Este documento descreve a arquitetura, os modulos, o pipeline de conversao e o formato de saida.
+Documentacao tecnica detalhada do codigo-fonte do `olca-cf-converter`, desenvolvido no ambito do Pos-Doutorado da Dra. Yara de Souza Tadano (UFRJ) na area de Avaliacao de Impacto do Ciclo de Vida. Este documento descreve a arquitetura, os modulos, o pipeline de conversao e o formato de saida.
 
 ---
 

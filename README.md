@@ -8,7 +8,9 @@ Ferramenta open-source para pesquisadores de Analise de Ciclo de Vida (ACV/LCA) 
 
 ## Sobre o Projeto
 
-Este repositorio faz parte do projeto de **Pos-Doutorado da Dra. Yara de Souza Tadano**, na area de Analise de Ciclo de Vida (ACV). O trabalho visa criar ferramentas abertas e reprodutiveis para facilitar a integracao de novos metodos de avaliacao de impacto ambiental no software OpenLCA, contribuindo para a democratizacao e padronizacao de metodos LCIA desenvolvidos pela comunidade cientifica brasileira e internacional.
+Este repositorio faz parte do projeto de **Pos-Doutorado da Dra. Yara de Souza Tadano** na **Universidade Federal do Rio de Janeiro (UFRJ)**, na grande area de Ciencias Ambientais, com foco em **Avaliacao de Impacto do Ciclo de Vida (AICV)**.
+
+O trabalho visa criar ferramentas computacionais abertas e reprodutiveis para facilitar a integracao de novos metodos de avaliacao de impacto ambiental no software OpenLCA, contribuindo para a democratizacao e padronizacao de metodos LCIA desenvolvidos pela comunidade cientifica brasileira e internacional. A pesquisa insere-se no contexto mais amplo da operacionalizacao da Avaliacao do Ciclo de Vida no Brasil, buscando reduzir a lacuna entre o desenvolvimento academico de fatores de caracterizacao regionalizados e sua efetiva adocao por praticantes e tomadores de decisao.
 
 O caso de uso original foi construido a partir dos fatores de caracterizacao desenvolvidos pela **Dra. Gabriela Giusti** (UFSCar, 2025), no contexto do metodo RAICV-Brazil para formacao de material particulado (PMFP), com fatores regionalizados para todos os estados brasileiros.
 
@@ -445,9 +447,19 @@ A configuracao esta em `configs/raicv-brazil-pmfp.yaml`.
 
 ## Projeto de Pos-Doutorado
 
-Este repositorio integra o projeto de Pos-Doutorado da **Dra. Yara de Souza Tadano**, com foco em Analise de Ciclo de Vida (ACV) e no desenvolvimento de ferramentas computacionais abertas para facilitar a criacao, distribuicao e integracao de metodos LCIA regionalizados no OpenLCA.
+Este repositorio integra o projeto de **Pos-Doutorado da Dra. Yara de Souza Tadano**, realizado na **Universidade Federal do Rio de Janeiro (UFRJ)**.
 
-O objetivo e reduzir a barreira tecnica entre o desenvolvimento de novos fatores de caracterizacao pela comunidade cientifica e a sua efetiva utilizacao por praticantes de ACV, promovendo reprodutibilidade e transparencia na avaliacao de impacto ambiental.
+- **Grande area:** Ciencias Ambientais
+- **Area:** Avaliacao de Impacto do Ciclo de Vida (AICV)
+- **Instituicao:** Universidade Federal do Rio de Janeiro (UFRJ)
+
+O projeto aborda um desafio central da ACV no Brasil: a distancia entre a producao academica de fatores de caracterizacao regionalizados e sua efetiva incorporacao nas ferramentas utilizadas por praticantes. Metodos LCIA desenvolvidos em teses e artigos frequentemente permanecem como tabelas estaticas em documentos PDF, sem integracao com os softwares de ACV mais utilizados pela comunidade.
+
+Esta ferramenta visa reduzir essa barreira tecnica, promovendo:
+- **Reprodutibilidade** — qualquer pesquisador pode recriar o pacote OpenLCA a partir da planilha e do config YAML
+- **Transparencia** — codigo aberto, documentado e testado
+- **Interoperabilidade** — compatibilidade com Ecoinvent e outros bancos de dados via reuso de UUIDs
+- **Acessibilidade** — interface por linha de comando sem necessidade de conhecimento em programacao
 
 ---
 
@@ -459,4 +471,6 @@ MIT License — veja [LICENSE](LICENSE).
 
 ## Autora
 
-**Dra. Yara de Souza Tadano** — Pesquisadora, Pos-Doutorado em Analise de Ciclo de Vida
+**Dra. Yara de Souza Tadano**
+Pos-Doutorado em Ciencias Ambientais — Avaliacao de Impacto do Ciclo de Vida
+Universidade Federal do Rio de Janeiro (UFRJ)
