@@ -5,7 +5,7 @@
 \section{Compara\c{c}\~ao entre M\'etodos de Caracteriza\c{c}\~ao para Forma\c{c}\~ao de Material Particulado}
 \label{anexo:comparacao-metodos}
 
-Este anexo apresenta a compara\c{c}\~ao dos resultados de impacto direto obtidos no OpenLCA utilizando diferentes m\'etodos de caracteriza\c{c}\~ao para forma\c{c}\~ao de material particulado (PM). A an\'alise foi conduzida com o invent\'ario de produ\c{c}\~ao de soja dispon\'ivel no SICV Brasil (IBICT), com dados regionalizados para 11 estados brasileiros.
+Este anexo apresenta a compara\c{c}\~ao dos resultados de impacto direto obtidos no OpenLCA utilizando diferentes modelos de caracteriza\c{c}\~ao para forma\c{c}\~ao de material particulado (PM). A an\'alise foi conduzida com o invent\'ario de produ\c{c}\~ao de soja dispon\'ivel no SICV Brasil (IBICT), com dados regionalizados para 11 estados brasileiros.
 
 % ============================================================================
 \subsection{Delineamento da compara\c{c}\~ao}
@@ -15,11 +15,11 @@ Este anexo apresenta a compara\c{c}\~ao dos resultados de impacto direto obtidos
 
 O invent\'ario de produ\c{c}\~ao de soja foi obtido do Sistema de Invent\'ario do Ciclo de Vida do IBICT\footnote{\url{https://sicv.acv.ibict.br/showProcess.xhtml?uuid=a7608c64-0d99-5c01-9dd9-001f97b4d8bb&version=03.01.000&stock=default}}, contemplando dados regionalizados para os estados de Bahia (BA), Goi\'as (GO), Maranh\~ao (MA), Minas Gerais (MG), Mato Grosso do Sul (MS), Mato Grosso (MT), Piau\'i (PI), Paran\'a (PR), Rio Grande do Sul (RS), S\~ao Paulo (SP) e Tocantins (TO).
 
-Como os fatores de caracteriza\c{c}\~ao do RAICV-BR-PM s\~ao regionalizados por estado e Giusti (2025) n\~ao calculou um FC global, realizou-se somente a an\'alise de impactos diretos, sem ciclo de vida completo.
+Como os fatores de caracteriza\c{c}\~ao do Método RAICV-BR-PM s\~ao regionalizados por estado e Giusti (2025) n\~ao calculou um FC global, realizou-se somente a an\'alise de impactos diretos, sem uma avaliação do ciclo de vida completo.
 
 \subsubsection{M\'etodos comparados}
 
-Cinco m\'etodos de caracteriza\c{c}\~ao para forma\c{c}\~ao de material particulado foram comparados:
+Os impactos calculados utilizando o método RAICV-BR-PM foram comparados a três métodos. Recipe (FC Globais), os FCs para Brasil e Global do GLAM (denominados GLAM-BR e GLAM-GLO) e os FCs regionalizados por estado de Oberschelp et al. (2020). A Tabela~\ref{tab:metodos-comparados} apresenta as características dos métodos considerados.
 
 \begin{table}[H]
 \centering
@@ -29,7 +29,7 @@ Cinco m\'etodos de caracteriza\c{c}\~ao para forma\c{c}\~ao de material particul
 \toprule
 \textbf{M\'etodo} & \textbf{Escopo} & \textbf{Tipo de FC} & \textbf{Refer\^encia} \\
 \midrule
-RAICV-BR  & Brasil (27 estados) & Regionalizado & Giusti (2025) \\
+RAICV-PM  & Brasil (27 estados) & Regionalizado & Giusti (2025) \\
 GLAM-BR   & Brasil (agregado)   & Nacional      & Fantke et al. (2019) \\
 GLAM-GLO  & Global              & Global        & Fantke et al. (2019) \\
 OBER-BR   & Brasil (27 estados) & Regionalizado & Oberschelp et al. (2020) \\
@@ -38,11 +38,11 @@ ReCiPe    & Global              & Global        & Huijbregts et al. (2017) \\
 \end{tabular}
 \end{table}
 
-Cada m\'etodo foi convertido em pacote JSON-LD e importado no OpenLCA utilizando a ferramenta \texttt{olca-cf-converter}. Os impactos diretos foram calculados para as quatro subst\^ancias precursoras de material particulado: am\^onia (NH\textsubscript{3}), \'oxidos de nitrog\^enio (NO\textsubscript{x}), material particulado fino (PM\textsubscript{2,5}) e di\'oxido de enxofre (SO\textsubscript{2}).
+Cada m\'etodo foi convertido em pacote JSON-LD e importado no OpenLCA utilizando a ferramenta \texttt{olca-cf-converter}. Os impactos diretos foram calculados para as três subst\^ancias precursoras de material particulado: am\^onia (NH\textsubscript{3}), \'oxidos de nitrog\^enio (NO\textsubscript{x}) e di\'oxido de enxofre (SO\textsubscript{2}), e para o material particulado fino (PM\textsubscript{2,5}) primário.
 
 \subsubsection{M\'etrica de compara\c{c}\~ao}
 
-A diverg\^encia entre cada m\'etodo alternativo e o RAICV-BR (refer\^encia) foi quantificada pelo sMAPE (\textit{Symmetric Mean Absolute Percentage Error}). Essa m\'etrica varia de 0\% (concord\^ancia perfeita) a 200\% (diverg\^encia m\'axima), sendo sim\'etrica em rela\c{c}\~ao a sobre e subestima\c{c}\~ao.
+A diverg\^encia entre cada m\'etodo alternativo e o RAICV-BR-PM (refer\^encia) foi quantificada pelo sMAPE (\textit{Symmetric Mean Absolute Percentage Error}). Essa m\'etrica varia de 0\% (concord\^ancia perfeita) a 200\% (diverg\^encia m\'axima), sendo sim\'etrica em rela\c{c}\~ao a sobre e subestima\c{c}\~ao.
 
 % ============================================================================
 \subsection{Resultados}
@@ -50,7 +50,7 @@ A diverg\^encia entre cada m\'etodo alternativo e o RAICV-BR (refer\^encia) foi 
 
 \subsubsection{Concord\^ancia geral por m\'etodo}
 
-A Tabela~\ref{tab:smape-medio} apresenta o sMAPE m\'edio por m\'etodo e subst\^ancia. Valores menores indicam maior proximidade com o RAICV-BR.
+A Tabela~\ref{tab:smape-medio} apresenta o sMAPE m\'edio por m\'etodo e subst\^ancia. Valores menores indicam maior proximidade com os impactos calculados utilizando o método RAICV-BR-PM.
 
 \begin{table}[H]
 \centering
@@ -68,11 +68,11 @@ GLAM-BR  & 121,0 & 142,7 & 124,9 & 183,9 & \textbf{143,1} \\
 \end{tabular}
 \end{table}
 
-O ReCiPe apresentou a maior concord\^ancia geral com o RAICV-BR (sMAPE m\'edio = 82,6\%), seguido pelo GLAM-GLO (91,2\%). Os m\'etodos regionalizados para o Brasil --- Oberschelp (136,1\%) e GLAM-BR (143,1\%) --- mostraram diverg\^encias maiores.
+O ReCiPe apresentou a maior concord\^ancia geral com o RAICV-BR-PM (sMAPE m\'edio = 82,6\%), seguido pelo GLAM-GLO (91,2\%). Os m\'etodos regionalizados para o Brasil --- Oberschelp (136,1\%) e GLAM-BR (143,1\%) --- mostraram diverg\^encias maiores.
 
-Esse resultado pode parecer contradit\'orio: seria de esperar que m\'etodos regionalizados para o Brasil concordassem mais com o RAICV-BR. Contudo, embora todos sejam ``regionalizados'', cada modelo parte de premissas de modelagem atmosf\'erica, resolu\c{c}\~oes espaciais e fun\c{c}\~oes dose-resposta distintas. O RAICV-BR utiliza modelagem espec\'ifica para o territ\'orio brasileiro (Giusti, 2025), com condi\c{c}\~oes meteorol\'ogicas e demogr\'aficas distintas das adotadas pelo GLAM e pelo Oberschelp.
+Esse resultado pode parecer contradit\'orio: seria de esperar que modelos regionalizados para o Brasil apresentassem impactos mais próximos aos calculados com o método RAICV-BR-PM. Contudo, embora todos sejam ''regionalizados'', cada modelo parte de premissas de modelagem atmosf\'erica, resolu\c{c}\~oes espaciais e fun\c{c}\~oes dose-resposta distintas. O Método RAICV-BR-PM utiliza modelagem espec\'ifica para o territ\'orio brasileiro (Giusti, 2025), com condi\c{c}\~oes meteorol\'ogicas e demogr\'aficas distintas das adotadas pelo GLAM e pelo Oberschelp. Estes resultados enfatizam a importância na escolha do modelo de caracterização a ser utilizado.
 
-A Figura~\ref{fig:boxplot} apresenta a distribui\c{c}\~ao do sMAPE por m\'etodo.
+A Figura~\ref{fig:boxplot} apresenta a distribui\c{c}\~ao do sMAPE por modelo de caracterização em relação ao método RAICV-BR-PM, considerando todas as substâncias e estados combinados, Observa-se que os métodos GLAM-GLO e RECIPE apresentam medianas inferiores à linha de referência de 100\%, indicando, em média, melhor desempenho relativo em termos de erro. No entanto, ambos exibem maior dispersão dos dados, sugerindo menor consistência entre os diferentes casos analisados. Por outro lado, os métodos GLAM-BR e OBER-BR apresentam medianas mais elevadas, frequentemente acima de 100\%, o que indica maior discrepância em relação ao método RAICV-BR-PM, embora o OBER-BR demonstre menor variabilidade, caracterizando maior estabilidade. A presença de outliers em alguns métodos evidencia a ocorrência de casos específicos com desvios significativos. De forma geral, os resultados indicam um trade-off entre precisão e robustez, em que métodos com menor erro médio tendem a apresentar maior variabilidade, enquanto métodos mais estáveis apresentam desempenho inferior em termos de SMAPE. Pode-se observar que, apesar dos resultados utilizando o RECIPE estejam mais próximos dos resultados do método RAICV-BR-PM, os resultados do método OBER-BR são mais consistentes (menor variabilidade), destacando a importância no desenvolvimento de métodos regionalizados.
 
 \begin{figure}[H]
 \centering
@@ -83,7 +83,7 @@ A Figura~\ref{fig:boxplot} apresenta a distribui\c{c}\~ao do sMAPE por m\'etodo.
 
 \subsubsection{An\'alise por subst\^ancia}
 
-A Figura~\ref{fig:heatmap} apresenta o sMAPE desagregado por subst\^ancia, estado e m\'etodo. Cores vermelhas indicam alta diverg\^encia com o RAICV-BR; cores verdes indicam alta concord\^ancia.
+A Figura~\ref{fig:heatmap} apresenta o sMAPE desagregado por subst\^ancia, estado e m\'etodo. Cores vermelhas indicam alta diverg\^encia com os resultados do métod RAICV-BR-PM; cores verdes indicam alta concord\^ancia.
 
 \begin{figure}[H]
 \centering
@@ -92,7 +92,7 @@ A Figura~\ref{fig:heatmap} apresenta o sMAPE desagregado por subst\^ancia, estad
 \label{fig:heatmap}
 \end{figure}
 
-A signific\^ancia das diferen\c{c}as entre m\'etodos foi testada pelo teste n\~ao param\'etrico de Kruskal-Wallis, adequado para amostras pequenas com distribui\c{c}\~oes n\~ao-normais:
+A signific\^ancia das diferen\c{c}as entre m\'etodos foi testada pelo teste n\~ao param\'etrico de Kruskal-Wallis, adequado para amostras pequenas com distribui\c{c}\~oes n\~ao-normais. A Tabela~\ref{tab:kruskal} apresenta os resultados deste teste. Pode-se observar que, para três substâncias (NO\textsubscript{x}, PM\textsubscript{2,5} e SO\textsubscript{2}), a escolha do m\'etodo de caracteriza\c{c}\~ao impacta de forma estatisticamente significativa os resultados de impacto. Somente para a am\^onia as diferen\c{c}as n\~ao alcan\c{c}aram signific\^ancia, sugerindo que os m\'etodos tendem a convergir para essa subst\^ancia --- possivelmente porque o transporte e a forma\c{c}\~ao de particulado secund\'ario a partir de NH\textsubscript{3} seguem padr\~oes mais uniformes no territ\'orio brasileiro.
 
 \begin{table}[H]
 \centering
@@ -110,7 +110,6 @@ SO\textsubscript{2}    & 22,65 & $<$0,0001 & \textbf{Sim} \\
 \end{tabular}
 \end{table}
 
-Para tr\^es das quatro subst\^ancias (NO\textsubscript{x}, PM\textsubscript{2,5} e SO\textsubscript{2}), a escolha do m\'etodo de caracteriza\c{c}\~ao impacta de forma estatisticamente significativa os resultados de impacto. Somente para a am\^onia as diferen\c{c}as n\~ao alcan\c{c}aram signific\^ancia, sugerindo que os m\'etodos tendem a convergir para essa subst\^ancia --- possivelmente porque o transporte e a forma\c{c}\~ao de particulado secund\'ario a partir de NH\textsubscript{3} seguem padr\~oes mais uniformes no territ\'orio brasileiro.
 
 \subsubsection{An\'alise por estado}
 
@@ -139,7 +138,7 @@ GO &  93,0 & 64,9  &  10,5 & 194,5 \\
 \end{tabular}
 \end{table}
 
-S\~ao Paulo destaca-se com o maior sMAPE m\'edio (168,1\%) e o menor desvio-padr\~ao (23,6\%), indicando que \textit{todos} os m\'etodos alternativos divergem fortemente do RAICV-BR para esse estado. Essa observa\c{c}\~ao \'e coerente com as particularidades de SP: a maior regi\~ao metropolitana do hemisf\'erio sul possui qu\'imica atmosf\'erica dominada por intera\c{c}\~oes complexas entre emiss\~oes veiculares, industriais e agr\'icolas que m\'etodos gen\'ericos n\~ao capturam adequadamente.
+S\~ao Paulo destaca-se com o maior sMAPE m\'edio (168,1\%) e o menor desvio-padr\~ao (23,6\%), indicando que todos os m\'etodos divergem fortemente do método RAICV-BR-PM para esse estado. Essa observa\c{c}\~ao \'e coerente com as particularidades de SP: a maior regi\~ao metropolitana do hemisf\'erio sul possui qu\'imica atmosf\'erica dominada por intera\c{c}\~oes complexas entre emiss\~oes veiculares, industriais e agr\'icolas que foram melhor capturadas pelo método RAICV-BR-PM, que é baseado em bases de dados nacionais, do que os demais métodos que foram desenvolvidos utilizando bases de dados internacionais.
 
 Em contraste, Goi\'as e Mato Grosso do Sul apresentam os menores sMAPEs m\'edios ($\sim$93\%), sugerindo que, para estados com perfil agr\'icola predominante e menor densidade urbana, os m\'etodos tendem a convergir.
 
@@ -154,11 +153,11 @@ O perfil espacial da diverg\^encia por subst\^ancia e estado \'e apresentado na 
 
 \subsubsection{M\'etodo mais pr\'oximo do RAICV-BR por contexto}
 
-Das 44 combina\c{c}\~oes poss\'iveis (11 estados $\times$ 4 subst\^ancias), analisou-se qual m\'etodo alternativo apresenta menor sMAPE em cada caso (Tabela~\ref{tab:vitorias} e Figura~\ref{fig:vitorias}).
+Das 44 combina\c{c}\~oes poss\'iveis (11 estados $\times$ 4 subst\^ancias), analisou-se qual m\'etodo apresenta menor sMAPE em cada caso (Tabela~\ref{tab:vitorias} e Figura~\ref{fig:vitorias}).
 
 \begin{table}[H]
 \centering
-\caption{Contagem de ``vit\'orias'' --- m\'etodo mais pr\'oximo do RAICV-BR}
+\caption{Contagem de ``vit\'orias'' --- m\'etodo mais pr\'oximo do RAICV-BR-PM}
 \label{tab:vitorias}
 \begin{tabular}{lrr}
 \toprule
@@ -179,12 +178,12 @@ GLAM-BR  &  2 &  5\% \\
 \label{fig:vitorias}
 \end{figure}
 
-O ReCiPe e o GLAM-GLO s\~ao, juntos, os mais pr\'oximos do RAICV-BR em 75\% dos casos. Contudo, nenhum m\'etodo isolado \'e consistentemente superior --- a melhor alternativa depende tanto da subst\^ancia quanto do estado em an\'alise (Figura~\ref{fig:melhor-metodo}).
+O ReCiPe e o GLAM-GLO s\~ao, juntos, os mais pr\'oximos do RAICV-BR-PM em 75\% dos casos. Contudo, nenhum m\'etodo isolado \'e consistentemente superior --- a melhor alternativa depende tanto da subst\^ancia quanto do estado em an\'alise (Figura~\ref{fig:melhor-metodo}).
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.85\textwidth]{figuras/fig6-mapa-melhor-metodo.pdf}
-\caption{M\'etodo mais pr\'oximo do RAICV-BR por estado e subst\^ancia, com sMAPE anotado em cada c\'elula.}
+\caption{M\'etodo mais pr\'oximo do RAICV-BR-PM por estado e subst\^ancia, com sMAPE anotado em cada c\'elula.}
 \label{fig:melhor-metodo}
 \end{figure}
 
@@ -207,13 +206,13 @@ Os resultados desta compara\c{c}\~ao permitem destacar cinco pontos:
 
 \begin{enumerate}[label=\arabic*.]
 
-\item \textbf{A escolha do m\'etodo de caracteriza\c{c}\~ao importa.} Para 3 de 4 subst\^ancias, as diferen\c{c}as entre m\'etodos s\~ao estatisticamente significativas (Kruskal-Wallis, $p < 0{,}05$). Essa sensibilidade refor\c{c}a a relev\^ancia de m\'etodos regionalizados como o RAICV-BR.
+\item \textbf{A escolha do modelo de caracteriza\c{c}\~ao importa.} Para 3 de 4 subst\^ancias analisadas, as diferen\c{c}as entre m\'etodos s\~ao estatisticamente significativas (Kruskal-Wallis, $p < 0{,}05$). Essa sensibilidade refor\c{c}a a relev\^ancia do desenvolvimento e uso de m\'etodos regionalizados como o RAICV-BR-PM.
 
-\item \textbf{Regionaliza\c{c}\~ao n\~ao implica concord\^ancia.} M\'etodos regionalizados para o Brasil (GLAM-BR, Oberschelp) n\~ao s\~ao necessariamente mais pr\'oximos do RAICV-BR do que m\'etodos globais (ReCiPe, GLAM-GLO). Cada modelo parte de premissas atmosf\'ericas, resolu\c{c}\~oes espaciais e fun\c{c}\~oes dose-resposta distintas.
+\item \textbf{Regionaliza\c{c}\~ao n\~ao implica concord\^ancia.} M\'etodos regionalizados para o Brasil (Oberschelp) n\~ao s\~ao necessariamente mais pr\'oximos do RAICV-BR-PM do que m\'etodos globais (ReCiPe, GLAM-GLO). Cada modelo parte de premissas atmosf\'ericas, resolu\c{c}\~oes espaciais e fun\c{c}\~oes dose-resposta distintas, o que altera significativamente os resultados.
 
-\item \textbf{S\~ao Paulo \'e o caso mais cr\'itico.} Todos os m\'etodos alternativos divergem fortemente do RAICV-BR para SP (sMAPE m\'edio = 168\%), evidenciando que regi\~oes com alta complexidade urbano-industrial requerem modelagem atmosf\'erica dedicada.
+\item \textbf{S\~ao Paulo \'e o caso mais cr\'itico.} Todos os m\'etodos divergem fortemente do RAICV-BR-PM para SP (sMAPE m\'edio = 168\%), evidenciando que regi\~oes com alta complexidade urbano-industrial são mais sensíveis à modelagem atmosférica, base de dados e delineamentos feito por cada modelo.
 
-\item \textbf{Nenhum m\'etodo substitui todos os outros.} O ReCiPe \'e a melhor aproxima\c{c}\~ao ao RAICV-BR em 43\% dos casos, mas em 57\% outro m\'etodo \'e mais adequado. Isso demonstra que fatores de caracteriza\c{c}\~ao contextualizados s\~ao fundamentais para estudos de ACV que pretendam refletir as condi\c{c}\~oes ambientais do Brasil.
+\item \textbf{Nenhum m\'etodo substitui todos os outros.} O ReCiPe \'e a melhor aproxima\c{c}\~ao ao RAICV-BR-PM em 43\% dos casos, mas em 57\% outro m\'etodo \'e mais adequado. Isso demonstra que fatores de caracteriza\c{c}\~ao regionalizados s\~ao fundamentais para estudos de ACV que pretendam refletir as condi\c{c}\~oes ambientais do Brasil.
 
 \item \textbf{A ferramenta \texttt{olca-cf-converter} viabiliza compara\c{c}\~oes sistem\'aticas.} A capacidade de converter rapidamente diferentes conjuntos de FCs em pacotes import\'aveis pelo OpenLCA permitiu que esta compara\c{c}\~ao multim\'etodo fosse realizada de forma reprodut\'ivel e eficiente.
 

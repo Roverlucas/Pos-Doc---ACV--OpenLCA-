@@ -5,13 +5,13 @@
 \section*{RESUMO}
 \addcontentsline{toc}{section}{Resumo}
 
-Este relat\'orio descreve as atividades realizadas durante o est\'agio p\'os-doutoral na Universidade Federal do Rio de Janeiro (UFRJ), no \^ambito do Programa Institucional de P\'os-Doutorado (PIPD), na \'area de Ci\^encias Ambientais com foco em Avalia\c{c}\~ao de Impacto do Ciclo de Vida (AICV).
+Este relat\'orio descreve as atividades realizadas durante o est\'agio p\'os-doutoral no Programa de Pós-Graduação em Ciência da Informação, da Universidade Federal do Rio de Janeiro (UFRJ) em parceria com o Instituto Brasileiro de Informação em Ciência e Tecnologia (IBICT), com foco em Avalia\c{c}\~ao de Impacto do Ciclo de Vida (AICV) e tecnologia da informação.
 
-O projeto abordou uma lacuna cr\'itica na operacionaliza\c{c}\~ao da Avalia\c{c}\~ao do Ciclo de Vida (ACV) no Brasil: a aus\^encia de ferramentas automatizadas para converter fatores de caracteriza\c{c}\~ao (CFs) desenvolvidos em pesquisas acad\^emicas em pacotes compat\'iveis com o software OpenLCA, o principal software open-source de ACV utilizado mundialmente. M\'etodos LCIA regionalizados produzidos em teses e artigos brasileiros frequentemente permanecem como tabelas est\'aticas em documentos PDF, sem efetiva integra\c{c}\~ao nas ferramentas utilizadas por praticantes.
+O projeto abordou uma lacuna cr\'itica na operacionaliza\c{c}\~ao da Avalia\c{c}\~ao do Ciclo de Vida (ACV) no Brasil: a aus\^encia de ferramentas automatizadas para converter fatores de caracteriza\c{c}\~ao (CFs) desenvolvidos em pesquisas acad\^emicas em pacotes compat\'iveis com o software OpenLCA, o principal software open-source de ACV utilizado mundialmente. M\'etodos de AICV regionalizados produzidos em teses e artigos tanto brasileiros quanto internacionais frequentemente permanecem como tabelas est\'aticas em documentos PDF ou planilhas Excel, sem efetiva integra\c{c}\~ao nas ferramentas utilizadas por praticantes da ACV.
 
 Como resultado principal, foi desenvolvida a ferramenta \texttt{olca-cf-converter}, um software open-source em Python que automatiza todo o pipeline de convers\~ao: leitura de planilhas Excel padronizadas, gera\c{c}\~ao de arquivos JSON-LD no formato do OpenLCA (schema v2), reaproveitamento de identificadores \'unicos (UUIDs) da base Ecoinvent para garantir interoperabilidade, e empacotamento em arquivo ZIP import\'avel. A ferramenta \'e gen\'erica, suportando qualquer categoria de impacto (endpoint ou midpoint), qualquer unidade de sa\'ida, e fatores regionalizados por localiza\c{c}\~ao geogr\'afica.
 
-A valida\c{c}\~ao foi conduzida com os 725 fatores de caracteriza\c{c}\~ao do m\'etodo RAICV-Brazil para forma\c{c}\~ao de material particulado (PMFP), desenvolvidos pela Dra. Gabriela Giusti (UFSCar, 2025), com regionaliza\c{c}\~ao para os 27 estados brasileiros. O pacote gerado pela ferramenta foi comparado com o pacote original produzido manualmente, obtendo 100\% de correspond\^encia nos valores dos fatores e plena compatibilidade estrutural com o OpenLCA.
+A valida\c{c}\~ao foi conduzida com os 725 fatores de caracteriza\c{c}\~ao do m\'etodo RAICV-BR-PM para forma\c{c}\~ao de material particulado (PMFP), desenvolvidos pela Dra. Gabriela Giusti (UFSCar, 2025), com regionaliza\c{c}\~ao para os 27 estados brasileiros. O pacote gerado pela ferramenta foi comparado com o pacote original produzido manualmente, obtendo 100\% de correspond\^encia nos valores dos fatores e plena compatibilidade estrutural com o OpenLCA.
 
 \textbf{Palavras-chave:} Avalia\c{c}\~ao de Ciclo de Vida; AICV; fatores de caracteriza\c{c}\~ao; OpenLCA; JSON-LD; regionaliza\c{c}\~ao; Ecoinvent; software aberto; reprodutibilidade.
 
@@ -21,17 +21,25 @@ A valida\c{c}\~ao foi conduzida com os 725 fatores de caracteriza\c{c}\~ao do m\
 
 \subsection{Contexto e Justificativa}
 
-A Avaliação do Ciclo de Vida (ACV) é uma das técnicas mais completas para avaliação de impactos ambientais de sistemas de produção que apoia a tomada de decisões e a formulação de políticas públicas (ISO 2006a, b). Ela consiste em quatro etapas: Definição do Objetivo e Escopo, Análise de Inventário do Ciclo de Vida (ICV), Avaliação de Impacto do Ciclo de Vida (AICV) e interpretação.
-A Análise de Inventário do Ciclo de Vida (ICV) envolve a coleta de dados e procedimentos de cálculo para quantificar entradas e saídas relevantes para um sistema de produto (ISO 2006a). Nesta etapa, são definidos fluxos elementares, que de forma geral, compreendem material ou energia do meio ambiente que entra no sistema em estudo ou que é liberada ao meio ambiente (ISO 2006a).
-Na terceira etapa da ACV (AICV), os fluxos inventariados do ICV são convertidos em impactos ambientais, utilizando Fatores de Caracterização (FC). Os FC mensuram o impacto de um fluxo elementar para uma categoria de AICV (Hauschild; Huijbregts, 2015) e são obtidos por meio de modelos de caracterização (RAICV, 2019). Para viabilizar os estudos de ACV, é necessário que os modelos de caracterização sejam compatíveis com os fluxos inventariados do ICV.
+A Avaliação do Ciclo de Vida (ACV) é uma das técnicas mais completas para a avaliação de impactos ambientais de sistemas de produção, que apoia a tomada de decisões e a formulação de políticas públicas (ISO 2006a, b). Ela consiste em quatro etapas: Definição do Objetivo e Escopo, Análise de Inventário do Ciclo de Vida (ICV), Avaliação de Impacto do Ciclo de Vida (AICV) e interpretação.
+
+A Análise de Inventário do Ciclo de Vida (ICV) envolve a coleta de dados e a definição de procedimentos de cálculo para quantificar entradas e saídas relevantes de um sistema de produto (ISO 2006a). Nesta etapa, são definidos fluxos elementares, que, de forma geral, compreendem material ou energia do meio ambiente que entra no sistema em estudo ou que é liberada ao meio ambiente (ISO 2006a).
+
+Na terceira etapa da ACV (AICV), os fluxos inventariados do ICV são convertidos em impactos ambientais, utilizando Fatores de Caracterização (FC). Os FC mensuram o impacto de um fluxo elementar em uma categoria de AICV (Hauschild; Huijbregts, 2015) e são obtidos por meio de modelos de caracterização (RAICV, 2019). Para viabilizar os estudos de ACV, é necessário que os modelos de caracterização sejam compatíveis com os fluxos inventariados do ICV.
 Nos últimos anos, com o crescimento no uso da ACV, houve um desenvolvimento acelerado de ICVs e métodos de AICV em todo o mundo, o que resultou em uma incompatibilidade entre os bancos de dados de ICV e os métodos de AICV (Sanyé-Mengual et al., 2022). 
-Além disso, ao longo dos anos, observou-se que estudos de ACV que avaliam produtos nacionais, amparados por informações advindas de conjuntos de dados representativos de processos internacionais (não compatíveis com a realidade do país), podem gerar altas incertezas nos resultados e não alcançar a qualidade desejada ao se realizar uma ACV (Rodrigues et al., 2016). 
+
+Além disso, ao longo dos anos, observou-se que estudos de ACV que avaliam produtos nacionais, amparados por informações provenientes de conjuntos de dados representativos de processos internacionais (não compatíveis com a realidade do país), podem gerar altas incertezas nos resultados e não alcançar a qualidade desejada na realização de uma ACV (Rodrigues et al., 2016). 
 Da necessidade de inventários nacionais, foi então criado o Banco Nacional de Inventários do Ciclo de Vida de Produtos Brasileiros – SICV Brasil, desenvolvido pelo Ibict/MCTI (SICV Brasil, 2024).
-Da mesma forma, esforços internacionais geraram o projeto Global Guidance on Environmental Life Cycle Impact Assessment Indicators (GLAM), que visa recomendar um método de AICV global para categorias de impacto selecionadas. Apesar disso, com o avanço das pesquisas em AICV, identificou-se a necessidade do desenvolvimento de FCs para regiões específicas (MUTEL et al., 2019; Potting, Hauschild, 2006). Neste contexto, foi formada a Rede de Pesquisa em Avaliação de Impacto do Ciclo de Vida (RAICV) no Brasil em 2014. Uma organização civil, não governamental, composta de pesquisadores de ACV engajados em adaptar e desenvolver modelos de caracterização para diferentes categorias de impacto, considerando as particularidades do Brasil (RAICV, 2019).
+
+Da mesma forma, esforços internacionais geraram o projeto Global Guidance on Environmental Life Cycle Impact Assessment Indicators (GLAM), que visa recomendar um método de AICV global para categorias de impacto selecionadas. Apesar disso, com o avanço das pesquisas em AICV, identificou-se a necessidade do desenvolvimento de FCs para regiões específicas (MUTEL et al., 2019; Potting, Hauschild, 2006). Neste contexto, foi formada a Rede de Pesquisa em Avaliação de Impacto do Ciclo de Vida (RAICV) no Brasil em 2014. Uma organização civil, não governamental, composta por pesquisadores da ACV, engajados em adaptar e desenvolver modelos de caracterização para diferentes categorias de impacto, considerando as particularidades do Brasil (RAICV, 2019).
 A RAICV recomendou modelos de caracterização para sete categorias de impacto em seu primeiro relatório (RAICV, 2019). Além disso, estudos de regionalização foram realizados pela rede para escassez hídrica (Andrade et al., 2019), acidificação (Mendes et al., 2019) e uso da terra (Pavan, 2019).
+
 Em continuidade aos trabalhos, a RAICV publicou seu segundo relatório (RAICV, 2023), com o objetivo de; recomendar modelos de caracterização para uso no contexto brasileiro para mais duas categorias de impacto: smog fotoquímico e danos à saúde por formação de material particulado; apresentar um método para escolha de métodos de ponderação, auxiliando usuários de ACV na obtenção de resultados de pontuação única em seus estudos; a regionalização de FCs de ponto médio e ponto final para eutrofização de água doce e; a regionalização e análise de incertezas para escassez hídrica.
-Apesar dos esforços da RAICV na recomendação e na regionalização de fatores de caracterização (FCs) nos últimos dez anos, existe uma lacuna significativa entre a produçãoo acadêmica desses fatores e sua efetiva utilização por praticantes de ACV. O principal gargalo reside na integração técnica: os FCs publicados em teses e artigos científicos são tipicamente apresentados em formato tabular (planilhas ou tabelas em PDF), enquanto o software OpenLCA — a principal plataforma open-source de ACV, utilizada por mais de 30.000 profissionais mundialmente — requer pacotes no formato JSON-LD com uma estrutura específica de arquivos, identificadores únicos (UUIDs) e encadeamento de entidades.
-Assim, o uso de modelos de caracterização que não estão disponíveis em softwares de ACV só é possível ao se realizar um estudo de ACV manualmente com o auxílio de planilhas excel utilizando os elementos mandatórios definidos na norma ISO 14044 (ISO, 200XX) (seleção dos indicadores de categoria e modelos de caracterização, classificação dos impactos e caracterização dos impactos), como feito por Giusti et al. (2023).
+
+Apesar dos esforços da RAICV na recomendação e na regionalização de fatores de caracterização (FCs) nos últimos dez anos, existe uma lacuna significativa entre a produção acadêmica desses fatores e sua efetiva utilização por praticantes de ACV. O principal gargalo reside na integração técnica: os FCs publicados em teses e artigos científicos são tipicamente apresentados em formato tabular (planilhas ou tabelas em PDF), enquanto o software OpenLCA — a principal plataforma open-source de ACV, utilizada por mais de 30.000 profissionais mundialmente — requer pacotes no formato JSON-LD com uma estrutura específica de arquivos, identificadores únicos (UUIDs) e encadeamento de entidades.
+
+Assim, o uso de modelos de caracterização que não estão disponíveis em softwares de ACV só é possível ao se realizar um estudo de ACV manualmente com o auxílio de planilhas excel utilizando os elementos mandatórios definidos na norma ISO 14044 (ISO, 2006b) (seleção dos indicadores de categoria e modelos de caracterização, classificação dos impactos e caracterização dos impactos), como feito por Giusti et al. (2023).
+
 Este processo manual de conversão de centenas de fatores para este formato é tedioso, propenso a erros e mal documentado. Um único UUID incorreto pode impedir a aplicação de todos os fatores ao inventário. Além disso, a compatibilidade com bases de dados existentes (como Ecoinvent) depende do reaproveitamento adequado dos UUIDs dos fluxos elementares — uma operação que requer conhecimentos técnicos específicos, não disponíveis para a maioria dos pesquisadores e utilizadores da ACV.
 
 \subsection{Hip\'otese de Trabalho}
@@ -117,11 +125,12 @@ O desenvolvimento e valida\c{c}\~ao da ferramenta utilizaram os seguintes dados:
 
 \subsection{Arquitetura da ferramenta}
 
-A ferramenta \texttt{olca-cf-converter} foi desenvolvida em Python (vers\~ao 3.10+) com arquitetura modular composta por quatro m\'odulos:
+A ferramenta \texttt{olca-cf-converter} foi desenvolvida em Python (vers\~ao 3.10+) com arquitetura modular composta por quatro m\'odulos, conforme apresentado na Tabela~\ref{tab:olca}.
 
 \begin{table}[H]
 \centering
 \caption{M\'odulos do \texttt{olca-cf-converter}}
+\label{tab:olca}
 \begin{tabular}{llr}
 \toprule
 \textbf{M\'odulo} & \textbf{Fun\c{c}\~ao} & \textbf{Linhas} \\
@@ -150,7 +159,7 @@ O motor de convers\~ao executa 12 etapas sequenciais:
     \item Cria\c{c}\~ao dos fluxos elementares com reaproveitamento de UUIDs
     \item Constru\c{c}\~ao do mapa de identificadores \texttt{(nome, categoria, localiza\c{c}\~ao) $\rightarrow$ UUID}
     \item Montagem da categoria de impacto com todos os fatores de caracteriza\c{c}\~ao
-    \item Cria\c{c}\~ao do m\'etodo LCIA
+    \item Cria\c{c}\~ao do m\'etodo de AICV
     \item Gera\c{c}\~ao do manifesto \texttt{openlca.json}
     \item Empacotamento em arquivo ZIP comprimido
 \end{enumerate}
@@ -161,18 +170,21 @@ Para cada combina\c{c}\~ao \'unica de (nome do fluxo, categoria/compartimento) p
 
 \subsection{Testes automatizados}
 
-Foram desenvolvidos 23 testes automatizados organizados em quatro su\'ites:
+Foram desenvolvidos 23 testes automatizados organizados em quatro su\'ites, conforme apresentado na Tabela~\ref{tab:testeauto}.
+
+
 
 \begin{table}[H]
 \centering
 \caption{Su\'ite de testes automatizados}
+\label{tab:testeauto}
 \begin{tabular}{llr}
 \toprule
 \textbf{Su\'ite} & \textbf{Cobertura} & \textbf{Testes} \\
 \midrule
 \texttt{test\_schemas.py} & Serializa\c{c}\~ao JSON-LD de cada entidade & 6 \\
 \texttt{test\_validator.py} & Valida\c{c}\~ao de entrada (6 cen\'arios de erro) & 6 \\
-\texttt{test\_converter.py} & Pipeline completo, deduplicac\c{c}\~ao, reuso IDs & 8 \\
+\texttt{test\_converter.py} & Pipeline completo, deduplica\c{c}\~ao, reuso IDs & 8 \\
 \texttt{test\_cli.py} & Comandos help, version, init & 3 \\
 \midrule
 \textbf{Total} & & \textbf{23} \\
@@ -194,11 +206,12 @@ A ferramenta \texttt{olca-cf-converter} v1.0.0 foi conclu\'ida e publicada em re
 
 \subsection{Valida\c{c}\~ao com dados do Método RAICV-Brazil PM}
 
-A valida\c{c}\~ao principal foi conduzida com os 725 CFs do m\'etodo RAICV-Brazil PM (Giusti, 2025):
+A valida\c{c}\~ao principal foi conduzida com os 725 CFs do m\'etodo RAICV-Brazil PM (Giusti, 2025) e os resultados da conversão dos dados em Excel para JSON estão apresentados na Tabela~\ref{tab:resconver}.
 
 \begin{table}[H]
 \centering
-\caption{Resultados da convers\~ao com dados RAICV-Brazil}
+\caption{Resultados da convers\~ao com dados do Método RAICV-BR-PM}
+\label{tab:resconver} 
 \begin{tabular}{lr}
 \toprule
 \textbf{M\'etrica} & \textbf{Resultado} \\
@@ -213,35 +226,16 @@ Manifesto \texttt{openlca.json} & Presente (schema v2) \\
 \end{tabular}
 \end{table}
 
-\subsection{Compara\c{c}\~ao com o pacote original}
 
-O pacote gerado pela ferramenta foi comparado estruturalmente e numericamente com o pacote previamente gerado pelo script original (\texttt{FINAL-correto-reused-ids.py}), confirmando equival\^encia total:
-
-\begin{table}[H]
-\centering
-\caption{Compara\c{c}\~ao entre pacote gerado pelo script original e pela ferramenta}
-\begin{tabular}{lccc}
-\toprule
-\textbf{Aspecto} & \textbf{Script original} & \textbf{olca-cf-converter} & \textbf{Corresp.} \\
-\midrule
-Nome do m\'etodo & RAICV-Brazil - PMFP & RAICV-Brazil - PMFP & 100\% \\
-N\'umero de fatores & 725 & 725 & 100\% \\
-Unidade de refer\^encia & DALY & DALY & 100\% \\
-Formato JSON-LD & schema v2 & schema v2 & 100\% \\
-\textbf{Valores dos 725 CFs} & --- & --- & \textbf{100\%} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Todos os 725 valores de fatores foram comparados com precis\~ao de $10^{-15}$, confirmando que a refatora\c{c}\~ao modular preserva fidelidade num\'erica total ao pipeline original. Al\'em dessa valida\c{c}\~ao de equival\^encia, uma compara\c{c}\~ao funcional com m\'ultiplos m\'etodos de caracteriza\c{c}\~ao foi conduzida no OpenLCA (ver Anexo~\ref{anexo:comparacao-metodos}).
 
 \subsection{Valida\c{c}\~ao de qualidade (QA)}
 
-Uma auditoria de qualidade automatizada verificou:
+Uma auditoria de qualidade automatizada verificou os itens apresentados na Tabela~\ref{tab:audit}.
 
 \begin{table}[H]
 \centering
 \caption{Resultados da auditoria de qualidade}
+\label{tab:audit}
 \begin{tabular}{lr}
 \toprule
 \textbf{Verifica\c{c}\~ao} & \textbf{Resultado} \\
@@ -258,29 +252,23 @@ Segredos hardcoded no c\'odigo & 0 \\
 \end{table}
 
 \subsection{Documenta\c{c}\~ao produzida}
+Executado o código, a documentação produzida consistiu de:
 
-\begin{table}[H]
-\centering
-\caption{Documentos produzidos}
-\begin{tabular}{ll}
-\toprule
-\textbf{Documento} & \textbf{Conte\'udo} \\
-\midrule
-\texttt{README.md} & Guia completo do usu\'ario (477 linhas) \\
-\texttt{technical-reference.md} & Refer\^encia t\'ecnica detalhada \\
-\texttt{ecoinvent-matching.md} & Mecanismo de reuso de IDs \\
-\texttt{openlca-import.md} & Guia de importa\c{c}\~ao no OpenLCA \\
-\texttt{supported-units.md} & Refer\^encia de unidades suportadas \\
-\texttt{original-script.md} & Documenta\c{c}\~ao hist\'orica do script original \\
-\bottomrule
-\end{tabular}
-\end{table}
+\begin{enumerate}[label=\arabic*.]
+    \item \textbf{README.md} --- Guia completo do usu\'ario (477 linhas).
+    \item \textbf{technical-reference.md} --- Refer\^encia t\'ecnica detalhada.
+    \item \textbf{ecoinvent-matching.md} --- Mecanismo de reuso de IDs.
+    \item \textbf{openlca-import.m} --- Guia de importa\c{c}\~ao no OpenLCA.
+    \item \textbf{supported-units.md} ---Refer\^encia de unidades suportadas.
+    \item \textbf{original-script.md} --- Documenta\c{c}\~ao hist\'orica do script original.
+\end{enumerate}
+
 
 % ============================================================================
 \section{CONCLUS\~OES}
 % ============================================================================
 
-O projeto de p\'os-doutorado atingiu integralmente os objetivos propostos:
+O projeto de pós-doutoramento cumpriu seu objetivo de disponibilizar os FCs regionalizados para a categoria formação de MP desenvolvidos por Giusti (2025) em formato compatível com softwares de ACV, neste caso para o software OpenLCA, principal software open-source de ACV. Além disso, contribuiu ainda mais, desenvolvendo uma ferramenta que automatiza o processo de conversão de planilhas Excel padronizadas contendo FCs para arquivos JSON-LD em formato compatível com o OpenLCA, facilitando a utilização de FCs regionalizados que estão disponíveis somente em trabalhos científicos e planilhas Excel. Diante dos objetivos apresentados, pode-se concluir que:
 
 \begin{enumerate}[label=\arabic*.]
     \item \textbf{Mapeamento do formato JSON-LD do OpenLCA} --- A estrutura completa foi documentada, incluindo nuances n\~ao cobertas pela documenta\c{c}\~ao oficial.
@@ -291,11 +279,12 @@ O projeto de p\'os-doutorado atingiu integralmente os objetivos propostos:
     \item \textbf{Publica\c{c}\~ao aberta} --- Software dispon\'ivel no GitHub sob licen\c{c}a MIT, com 23 testes automatizados.
 \end{enumerate}
 
-A principal contribui\c{c}\~ao do trabalho \'e a cria\c{c}\~ao de um pipeline reprodut\'ivel que permite a qualquer pesquisador de ACV converter seus fatores de caracteriza\c{c}\~ao para o formato OpenLCA sem conhecimento de programa\c{c}\~ao, reduzindo a lacuna entre a produ\c{c}\~ao acad\^emica e a pr\'atica profissional na \'area de AICV no Brasil.
+A principal contribui\c{c}\~ao do trabalho foi a cria\c{c}\~ao de um pipeline reprodut\'ivel que permite a qualquer pesquisador de ACV converter seus fatores de caracteriza\c{c}\~ao para o formato OpenLCA sem conhecimento de programa\c{c}\~ao, reduzindo a lacuna entre a produ\c{c}\~ao acad\^emica e a pr\'atica profissional na \'area de AICV no Brasil.
 
 % ============================================================================
 \section{PERSPECTIVAS FUTURAS}
 % ============================================================================
+Como perspectivas para trabalhos futuros, sugere-se:
 
 \begin{enumerate}[label=\arabic*.]
     \item \textbf{Amplia\c{c}\~ao para m\'ultiplas categorias em um \'unico m\'etodo} --- Suportar m\'etodos completos (como o ReCiPe) com m\'ultiplas categorias em uma \'unica execu\c{c}\~ao.
@@ -306,50 +295,7 @@ A principal contribui\c{c}\~ao do trabalho \'e a cria\c{c}\~ao de um pipeline re
     \item \textbf{Workshops de capacita\c{c}\~ao} --- Elabora\c{c}\~ao de material did\'atico e realiza\c{c}\~ao de workshops em eventos de ACV no Brasil (CBGCV, CILCA).
 \end{enumerate}
 
-% ============================================================================
-\section{CRONOGRAMA DE EXECU\c{C}\~AO}
-% ============================================================================
 
-\begin{table}[H]
-\centering
-\caption{Cronograma de execu\c{c}\~ao por trimestre}
-\begin{tabularx}{\textwidth}{lX}
-\toprule
-\textbf{Trimestre} & \textbf{Atividades realizadas} \\
-\midrule
-T1 (Meses 1--3) & Revis\~ao bibliogr\'afica sobre ACV, AICV e regionaliza\c{c}\~ao de CFs no Brasil. Estudo do formato JSON-LD do OpenLCA e da estrutura de pacotes LCIA. An\'alise do script original de convers\~ao. \\
-\addlinespace
-T2 (Meses 4--6) & Projeto da arquitetura modular (schemas, validator, converter, cli). Implementa\c{c}\~ao dos modelos de dados e do motor de convers\~ao. Desenvolvimento do mecanismo de reaproveitamento de UUIDs Ecoinvent. \\
-\addlinespace
-T3 (Meses 7--9) & Implementa\c{c}\~ao da CLI e configura\c{c}\~ao via YAML. Desenvolvimento de 23 testes automatizados. Valida\c{c}\~ao com 725 fatores RAICV-Brazil. Corre\c{c}\~ao de bugs. \\
-\addlinespace
-T4 (Meses 10--12) & Reda\c{c}\~ao da documenta\c{c}\~ao t\'ecnica. Coment\'arios educativos em todo o c\'odigo-fonte. Publica\c{c}\~ao no GitHub. Prepara\c{c}\~ao de templates para outras categorias. Reda\c{c}\~ao do relat\'orio final. \\
-\bottomrule
-\end{tabularx}
-\end{table}
-
-% ============================================================================
-\section*{ATIVIDADES COMPLEMENTARES}
-\addcontentsline{toc}{section}{Atividades Complementares}
-% ============================================================================
-
-\subsection*{Produ\c{c}\~ao t\'ecnica}
-
-\begin{enumerate}[label=\arabic*.]
-    \item \textbf{Software publicado:} \texttt{olca-cf-converter} v1.0.0 --- Ferramenta open-source para convers\~ao de fatores de caracteriza\c{c}\~ao para OpenLCA. Reposit\'orio: \url{https://github.com/Roverlucas/Pos-Doc---ACV--OpenLCA-}. Licen\c{c}a MIT. 1.452 linhas de c\'odigo, 23 testes automatizados, 5 documentos t\'ecnicos.
-\end{enumerate}
-
-\subsection*{Artigos em prepara\c{c}\~ao}
-
-\begin{enumerate}[label=\arabic*.]
-    \item {[T\'itulo do artigo em prepara\c{c}\~ao, se houver]}
-\end{enumerate}
-
-\subsection*{Participa\c{c}\~ao em eventos}
-
-\begin{enumerate}[label=\arabic*.]
-    \item {[Evento, local, data]}
-\end{enumerate}
 
 % ============================================================================
 \section*{PARECER DO SUPERVISOR}
@@ -363,13 +309,8 @@ T4 (Meses 10--12) & Reda\c{c}\~ao da documenta\c{c}\~ao t\'ecnica. Coment\'arios
 \begin{center}
 \begin{tabular}{c@{\hskip 2cm}c}
 \rule{6cm}{0.4pt} & \rule{6cm}{0.4pt} \\
-Dra. Yara de Souza Tadano & {[Nome do(a) Supervisor(a)]} \\
-Pesquisadora de P\'os-Doutorado & Supervisor(a) \\
+Dra. Yara de Souza Tadano & {Tiago Emmanuel Nunes Braga} \\
+Pesquisadora de P\'os-Doutorado & Supervisor \\
 \end{tabular}
 
-\vspace{2cm}
-
-\rule{6cm}{0.4pt} \\
-{[Nome do(a) Coordenador(a)]} \\
-Coordenador(a) do Programa de P\'os-Gradua\c{c}\~ao
 \end{center}

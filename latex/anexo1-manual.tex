@@ -7,11 +7,15 @@
 
 \subsection{O que \'e esta ferramenta?}
 
-Imagine que voc\^e tem uma \textbf{tabela no Excel} com n\'umeros que representam o quanto cada poluente faz mal ao meio ambiente ou \`a sa\'ude das pessoas. Esses n\'umeros se chamam \textbf{fatores de caracteriza\c{c}\~ao}.
+A Avaliação do Ciclo de Vida (ACV) é uma metodologia consolidada para quantificar os impactos ambientais potenciais associados a produtos, processos ou serviços ao longo de todo o seu ciclo de vida, desde a extração de recursos naturais até a disposição final (“do berço ao túmulo”). Estruturada conforme as normas ISO 14040 e ISO 14044, a ACV permite uma análise sistêmica dos fluxos de matéria e de energia, subsidiando a tomada de decisão com base em indicadores ambientais robustos.
 
-Agora imagine que existe um \textbf{programa de computador} chamado OpenLCA que os profissionais de meio ambiente usam para calcular os impactos de produtos. S\'o que esse programa n\~ao consegue ler sua tabela do Excel diretamente. Ele precisa receber os dados em um formato especial --- um ``pacote'' com muitos arquivos organizados de um jeito bem espec\'ifico.
+A metodologia é composta por quatro etapas principais: (i) definição de objetivo e escopo, na qual são estabelecidos os limites do sistema, unidade funcional e critérios de alocação; (ii) análise de inventário do ciclo de vida (ICV), que envolve a quantificação dos fluxos de entrada e saída do sistema; (iii) avaliação de impacto do ciclo de vida (AICV), onde os fluxos inventariados são traduzidos em categorias de impacto ambiental por meio de modelos de caracterização; e (iv) interpretação, etapa na qual os resultados são analisados de forma crítica, considerando consistência, sensibilidade e limitações do estudo.
 
-\textbf{Esta ferramenta faz essa tradu\c{c}\~ao para voc\^e.} Ela pega sua tabela do Excel, organiza tudo no formato que o OpenLCA entende, e entrega um arquivo pronto para ser importado. Voc\^e n\~ao precisa saber programar.
+No contexto da AICV, os fatores de caracterização (FCs) desempenham um papel central, pois estabelecem a relação quantitativa entre as emissões inventariadas e seus potenciais impactos ambientais ou à saúde humana. Em termos práticos, esses fatores são frequentemente organizados em estruturas tabulares, como planilhas eletrônicas, nas quais cada substância é associada a um coeficiente que expressa sua contribuição relativa para uma determinada categoria de impacto (por exemplo, mudança climática, formação de material particulado ou toxicidade humana).
+
+Entretanto, para que esses fatores possam ser utilizados em ferramentas computacionais de ACV, como o openLCA, não é suficiente mantê-los em formato de planilha. Essas ferramentas requerem que os dados sejam estruturados de acordo com esquemas específicos de banco de dados, geralmente organizados em conjuntos de arquivos inter-relacionados que representam métodos de AICV, categorias de impacto, fluxos elementares e fatores de caracterização. Assim, torna-se necessário converter os dados originalmente disponíveis em formatos simples, como Excel, para formatos compatíveis com o software, por exemplo, JSON, garantindo consistência semântica, integridade das relações entre elementos e interoperabilidade com bases de dados de ACV.
+
+\textbf{Esta ferramenta faz essa tradu\c{c}\~ao para voc\^e.} Ela pega sua tabela do Excel, organiza tudo no formato que o OpenLCA entende, e entrega um arquivo pronto para ser importado no OpenLCA. Voc\^e n\~ao precisa saber programar.
 
 \begin{lstlisting}[style=bash]
 Sua tabela (Excel)  -->  [olca-cf-converter]  -->  Pacote pronto (ZIP)  -->  OpenLCA
@@ -24,11 +28,11 @@ Sua tabela (Excel)  -->  [olca-cf-converter]  -->  Pacote pronto (ZIP)  -->  Ope
 \textbf{Termo} & \textbf{Significado em linguagem simples} \\
 \midrule
 \endhead
-Fator de caracteriza\c{c}\~ao (CF) & Um n\'umero que diz ``quanto de impacto ambiental 1 kg de certo poluente causa''. Exemplo: 1 kg de am\^onia causa 0,000579 anos de vida perdidos (DALY). \\
+Fator de caracteriza\c{c}\~ao (CF) & Um n\'umero que diz ``quanto de impacto ambiental 1 kg de certo poluente causa''. Exemplo: 1 kg de am\^onia causa 0,000579 anos de vida perdidos (DALY). Este número é multiplicado por dados de inventário de emissões (Inventário do Ciclo de Vida - ICV) para quantificar os impactos potenciais causados por um produto, processo ou serviço. \\
 \addlinespace
-LCIA & Sigla para ``Avalia\c{c}\~ao de Impacto do Ciclo de Vida''. \'E a etapa em que os n\'umeros do invent\'ario s\~ao convertidos em impactos ambientais. \\
+LCIA ou AICV & Sigla para ``Avalia\c{c}\~ao de Impacto do Ciclo de Vida''. \'E a etapa em que os n\'umeros do invent\'ario (ICV) s\~ao convertidos em impactos ambientais potenciais. \\
 \addlinespace
-OpenLCA & Um programa gratuito que profissionais usam para fazer Avalia\c{c}\~ao de Ciclo de Vida. Funciona como o ``Excel da ACV''. \\
+OpenLCA & Um programa gratuito que profissionais usam para fazer uma Avalia\c{c}\~ao de Ciclo de Vida de um produto, processo ou serviço. Funciona como o ``Excel da ACV''. \\
 \addlinespace
 JSON-LD & O ``idioma'' que o OpenLCA fala. \'E um formato de arquivo. Voc\^e n\~ao precisa mexer nele --- a ferramenta cria automaticamente. \\
 \addlinespace
@@ -104,7 +108,7 @@ Nitrogen oxides & Elem. flows/Emission to air/high pop. & 0.001230 & DALY & Braz
 \begin{itemize}
     \item \textbf{Flow} = Nome do poluente em ingl\^es (deve coincidir com o Ecoinvent)
     \item \textbf{Category} = ``Endere\c{c}o'' de onde a subst\^ancia \'e emitida
-    \item \textbf{Factor} = O n\'umero do fator (com ponto decimal, n\~ao v\'irgula)
+    \item \textbf{Factor} = O valor do fator de caracterização correspondente àquele fluxo (Flow) e categoria (Category) (com ponto decimal, n\~ao v\'irgula)
     \item \textbf{Unit} = Unidade do impacto (informativo)
     \item \textbf{Location} = Lugar para o qual o fator vale (``Global'' se n\~ao regionalizado)
 \end{itemize}
