@@ -1,0 +1,191 @@
+% ============================================================================
+% ANEXO 1 --- MANUAL DO USUARIO
+% ============================================================================
+
+\section{Manual do Usu\'ario --- Guia Passo a Passo}
+\label{sec:anexo1}
+
+\subsection{O que \'e esta ferramenta?}
+
+Imagine que voc\^e tem uma \textbf{tabela no Excel} com n\'umeros que representam o quanto cada poluente faz mal ao meio ambiente ou \`a sa\'ude das pessoas. Esses n\'umeros se chamam \textbf{fatores de caracteriza\c{c}\~ao}.
+
+Agora imagine que existe um \textbf{programa de computador} chamado OpenLCA que os profissionais de meio ambiente usam para calcular os impactos de produtos. S\'o que esse programa n\~ao consegue ler sua tabela do Excel diretamente. Ele precisa receber os dados em um formato especial --- um ``pacote'' com muitos arquivos organizados de um jeito bem espec\'ifico.
+
+\textbf{Esta ferramenta faz essa tradu\c{c}\~ao para voc\^e.} Ela pega sua tabela do Excel, organiza tudo no formato que o OpenLCA entende, e entrega um arquivo pronto para ser importado. Voc\^e n\~ao precisa saber programar.
+
+\begin{lstlisting}[style=bash]
+Sua tabela (Excel)  -->  [olca-cf-converter]  -->  Pacote pronto (ZIP)  -->  OpenLCA
+\end{lstlisting}
+
+\subsection{Gloss\'ario de termos t\'ecnicos}
+
+\begin{longtable}{p{4cm}p{10cm}}
+\toprule
+\textbf{Termo} & \textbf{Significado em linguagem simples} \\
+\midrule
+\endhead
+Fator de caracteriza\c{c}\~ao (CF) & Um n\'umero que diz ``quanto de impacto ambiental 1 kg de certo poluente causa''. Exemplo: 1 kg de am\^onia causa 0,000579 anos de vida perdidos (DALY). \\
+\addlinespace
+LCIA & Sigla para ``Avalia\c{c}\~ao de Impacto do Ciclo de Vida''. \'E a etapa em que os n\'umeros do invent\'ario s\~ao convertidos em impactos ambientais. \\
+\addlinespace
+OpenLCA & Um programa gratuito que profissionais usam para fazer Avalia\c{c}\~ao de Ciclo de Vida. Funciona como o ``Excel da ACV''. \\
+\addlinespace
+JSON-LD & O ``idioma'' que o OpenLCA fala. \'E um formato de arquivo. Voc\^e n\~ao precisa mexer nele --- a ferramenta cria automaticamente. \\
+\addlinespace
+UUID & Um c\'odigo \'unico (como um CPF para subst\^ancias qu\'imicas). O OpenLCA usa esses c\'odigos para conectar as coisas entre si. \\
+\addlinespace
+Ecoinvent & O maior banco de dados de invent\'ario ambiental do mundo. \\
+\addlinespace
+YAML & Um arquivo de texto simples onde voc\^e escreve configura\c{c}\~oes. Como preencher um formul\'ario em texto. \\
+\addlinespace
+Terminal & A tela onde voc\^e digita comandos. No Mac chama ``Terminal'', no Windows chama ``PowerShell''. \\
+\addlinespace
+Python & A linguagem de programa\c{c}\~ao em que a ferramenta foi escrita. Voc\^e precisa ter instalado, mas n\~ao precisa saber programar. \\
+\addlinespace
+Flow & Uma subst\^ancia emitida ao meio ambiente (ex: am\^onia, di\'oxido de enxofre). \\
+\addlinespace
+Endpoint & Dano final (ex: anos de vida perdidos --- DALY). \\
+\addlinespace
+Midpoint & Impacto intermedi\'ario (ex: kg de CO$_2$ equivalente). \\
+\addlinespace
+DALY & \textit{Disability-Adjusted Life Years} --- ``anos de vida saud\'avel perdidos''. Unidade que mede o dano \`a sa\'ude humana. \\
+\bottomrule
+\end{longtable}
+
+\subsection{Pr\'e-requisitos}
+
+Voc\^e precisa ter instalado no computador:
+
+\begin{enumerate}
+    \item \textbf{Python 3.10 ou mais recente} --- Para verificar, abra o Terminal e digite: \lstinline[style=bash]{python3 --version}
+    \item \textbf{Acesso ao Terminal} --- Mac: aplicativo ``Terminal''; Windows: ``PowerShell''
+\end{enumerate}
+
+\subsection{Passo 1: Baixar a ferramenta}
+
+Abra o Terminal e copie/cole estes comandos:
+
+\begin{lstlisting}[style=bash]
+git clone https://github.com/Roverlucas/Pos-Doc---ACV--OpenLCA-.git
+cd Pos-Doc---ACV--OpenLCA-
+\end{lstlisting}
+
+O primeiro comando baixa os arquivos. O segundo entra na pasta que foi criada.
+
+\subsection{Passo 2: Preparar o ambiente}
+
+\begin{lstlisting}[style=bash]
+python3 -m venv .venv
+source .venv/bin/activate    # Mac/Linux
+# .venv\Scripts\activate     # Windows
+pip install -e ".[dev]"
+\end{lstlisting}
+
+Esses comandos criam um ``espa\c{c}o isolado'' e instalam a ferramenta. Voc\^e s\'o precisa fazer isso \textbf{uma vez}. Nas pr\'oximas vezes, basta ativar o ambiente com \lstinline[style=bash]{source .venv/bin/activate}.
+
+\subsection{Passo 3: Preparar a planilha Excel}
+
+Crie um arquivo \texttt{.xlsx} com 5 colunas:
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{lllll}
+\toprule
+\textbf{Flow} & \textbf{Category} & \textbf{Factor} & \textbf{Unit} & \textbf{Location} \\
+\midrule
+Ammonia & Elem. flows/Emission to air/unspec. & 0.000579 & DALY & Brazil \\
+Nitrogen oxides & Elem. flows/Emission to air/high pop. & 0.001230 & DALY & Brazil, SP \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{O que cada coluna significa:}
+\begin{itemize}
+    \item \textbf{Flow} = Nome do poluente em ingl\^es (deve coincidir com o Ecoinvent)
+    \item \textbf{Category} = ``Endere\c{c}o'' de onde a subst\^ancia \'e emitida
+    \item \textbf{Factor} = O n\'umero do fator (com ponto decimal, n\~ao v\'irgula)
+    \item \textbf{Unit} = Unidade do impacto (informativo)
+    \item \textbf{Location} = Lugar para o qual o fator vale (``Global'' se n\~ao regionalizado)
+\end{itemize}
+
+\subsection{Passo 4: Criar a configura\c{c}\~ao}
+
+\begin{lstlisting}[style=bash]
+olca-cf init -o meu-metodo.yaml
+\end{lstlisting}
+
+Abra o arquivo \texttt{meu-metodo.yaml} em qualquer editor de texto e preencha com os dados do seu m\'etodo:
+
+\begin{lstlisting}[style=yaml]
+method:
+  name: "Meu Metodo LCIA"
+  description: "Descricao com referencia bibliografica."
+category:
+  name: "minha categoria de impacto"
+  type: endpoint
+units:
+  input:
+    name: kg
+    property: Mass
+  output:
+    name: DALY
+    property: "Impact on human health"
+files:
+  excel: "meus-fatores.xlsx"
+  reference_zip: "Base-Ecoinvent.zip"
+  output_zip: "Meu-Metodo-FINAL.zip"
+\end{lstlisting}
+
+\subsection{Passo 5: Verificar a planilha (recomendado)}
+
+\begin{lstlisting}[style=bash]
+olca-cf validate meus-fatores.xlsx
+\end{lstlisting}
+
+Se tudo estiver correto, aparecer\'a: ``Excel file is valid!''. Se houver erro, a ferramenta dir\'a exatamente o que precisa ser corrigido.
+
+\subsection{Passo 6: Converter}
+
+\begin{lstlisting}[style=bash]
+olca-cf convert meu-metodo.yaml
+\end{lstlisting}
+
+O arquivo \texttt{Meu-Metodo-FINAL.zip} ser\'a criado --- este \'e o pacote para importar no OpenLCA.
+
+\subsection{Passo 7: Importar no OpenLCA}
+
+\begin{enumerate}
+    \item Abra o OpenLCA
+    \item Menu \textbf{File} $\rightarrow$ \textbf{Import}
+    \item Selecione \textbf{Linked Data (JSON-LD)}
+    \item Navegue at\'e o arquivo \texttt{.zip} gerado
+    \item Clique em \textbf{Finish}
+\end{enumerate}
+
+O m\'etodo aparecer\'a em \textbf{Impact assessment methods} no navegador.
+
+\subsection{Resumo r\'apido}
+
+\begin{lstlisting}[style=bash]
+# Instalacao (uma vez):
+git clone https://github.com/Roverlucas/Pos-Doc---ACV--OpenLCA-.git
+cd Pos-Doc---ACV--OpenLCA-
+python3 -m venv .venv && source .venv/bin/activate
+pip install -e ".[dev]"
+
+# Uso (toda vez):
+source .venv/bin/activate
+olca-cf validate meu-excel.xlsx
+olca-cf convert meu-config.yaml
+\end{lstlisting}
+
+\subsection{Perguntas frequentes}
+
+\begin{description}
+    \item[Preciso saber programar?] N\~ao. Voc\^e s\'o prepara a planilha e o arquivo de configura\c{c}\~ao.
+    \item[Funciona no Windows?] Sim. Funciona em Windows, Mac e Linux.
+    \item[E se eu n\~ao tenho a base do Ecoinvent?] Funciona sem ela. Coloque \texttt{reference\_zip: null} no config.
+    \item[Posso usar para qualquer tipo de impacto?] Sim. A ferramenta \'e gen\'erica.
+    \item[Meus fatores n\~ao s\~ao regionalizados.] Coloque ``Global'' na coluna Location.
+\end{description}

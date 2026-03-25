@@ -1,0 +1,130 @@
+\documentclass[12pt,a4paper]{article}
+
+% ============================================================================
+% PACOTES
+% ============================================================================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{setspace}
+\usepackage{titlesec}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{caption}
+\usepackage{tocloft}
+
+% ============================================================================
+% CONFIGURACOES
+% ============================================================================
+\onehalfspacing
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!60!black,
+    urlcolor=blue!70!black,
+    citecolor=blue!60!black,
+}
+
+% Estilo de listagens de codigo
+\definecolor{codebg}{RGB}{245,245,245}
+\definecolor{codegreen}{RGB}{0,128,0}
+\definecolor{codegray}{RGB}{128,128,128}
+\definecolor{codeblue}{RGB}{0,0,180}
+
+\lstset{
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    rulecolor=\color{gray!40},
+    numbers=none,
+    showstringspaces=false,
+    tabsize=2,
+    captionpos=b,
+    keywordstyle=\color{codeblue},
+    commentstyle=\color{codegreen},
+    stringstyle=\color{red!70!black},
+    literate={á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+             {ã}{{\~a}}1 {õ}{{\~o}}1 {ç}{{\c{c}}}1 {Ç}{{\c{C}}}1
+             {ê}{{\^e}}1 {â}{{\^a}}1 {ü}{{\"u}}1
+             {→}{{$\rightarrow$}}1 {✓}{{$\checkmark$}}1,
+}
+
+\lstdefinestyle{yaml}{
+    language={},
+    morecomment=[l]{\#},
+    morekeywords={method,category,units,files,columns,name,description,type,input,output,property,excel,reference_zip,model_zip,output_zip,flow,factor,unit,location},
+}
+
+\lstdefinestyle{python}{
+    language=Python,
+    morekeywords={dataclass,field,Optional,Path},
+}
+
+\lstdefinestyle{bash}{
+    language=bash,
+    morekeywords={olca-cf,convert,validate,init,pip,install,source,activate,git,clone,pytest},
+}
+
+\lstdefinestyle{json}{
+    language={},
+    morestring=[b]",
+    literate=
+        *{:}{{{\color{codeblue}:}}}{1}
+        {,}{{{\color{codeblue},}}}{1},
+}
+
+% Cabecalho e rodape
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textit{Relat\'orio de P\'os-Doutorado --- UFRJ/PIPD}}
+\fancyhead[R]{\small\textit{Dra. Yara de Souza Tadano}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% Formatacao de titulos
+\titleformat{\section}{\Large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries}{\thesubsubsection}{0.5em}{}
+
+% ============================================================================
+% DOCUMENTO
+% ============================================================================
+\begin{document}
+
+% --- CAPA ---
+\input{capa}
+
+% --- SUMARIO ---
+\newpage
+\tableofcontents
+\newpage
+
+% --- RELATORIO PRINCIPAL ---
+\input{relatorio}
+
+% --- REFERENCIAS ---
+\newpage
+\input{referencias}
+
+% --- ANEXO 1: MANUAL DO USUARIO ---
+\newpage
+\appendix
+\input{anexo1-manual}
+
+% --- ANEXO 2: DOCUMENTACAO TECNICA ---
+\newpage
+\input{anexo2-tecnica}
+
+\end{document}

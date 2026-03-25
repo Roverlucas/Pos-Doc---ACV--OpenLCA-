@@ -1,0 +1,252 @@
+% ============================================================================
+% ANEXO 2 --- DOCUMENTACAO TECNICA DO CODIGO-FONTE
+% ============================================================================
+
+\section{Documenta\c{c}\~ao T\'ecnica do C\'odigo-Fonte}
+\label{sec:anexo2}
+
+\subsection{Vis\~ao geral da arquitetura}
+
+A ferramenta \texttt{olca-cf-converter} possui arquitetura modular com quatro m\'odulos Python e um pipeline de 12 etapas sequenciais:
+
+\begin{lstlisting}
+config.yaml --> cli.py (parse) --> MethodConfig
+                                       |
+Excel .xlsx --> validator.py --------->|
+                                       |
+Ecoinvent ZIP --> converter.py ------->|
+                                       v
+                                 [Pipeline 12 steps]
+                                       |
+                                       v
+                                 output.zip (JSON-LD)
+\end{lstlisting}
+
+\textbf{M\'etricas do c\'odigo:}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{llrrl}
+\toprule
+\textbf{M\'odulo} & \textbf{Classes} & \textbf{Fun\c{c}\~oes} & \textbf{Linhas} & \textbf{Responsabilidade} \\
+\midrule
+\texttt{\_\_init\_\_.py} & 0 & 0 & 9 & Vers\~ao do pacote \\
+\texttt{schemas.py} & 8 & 1 & 439 & Modelos de dados e JSON-LD \\
+\texttt{validator.py} & 1 & 3 & 177 & Valida\c{c}\~ao de entrada \\
+\texttt{converter.py} & 0 & 4 & 512 & Pipeline de convers\~ao \\
+\texttt{cli.py} & 0 & 5 & 324 & Interface de linha de comando \\
+\midrule
+\textbf{Total} & \textbf{9} & \textbf{13} & \textbf{1.461} & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Depend\^encias externas: \texttt{pandas} ($\geq$ 2.0), \texttt{openpyxl} ($\geq$ 3.1), \texttt{pyyaml} ($\geq$ 6.0). Todas as demais s\~ao da biblioteca padr\~ao do Python.
+
+\subsection{M\'odulo schemas.py --- Modelos de dados}
+
+Define as entidades do formato JSON-LD do OpenLCA como \textit{dataclasses} Python. A hierarquia reflete a estrutura interna do OpenLCA:
+
+\begin{lstlisting}
+ImpactMethodDef              (lcia_methods/{uuid}.json)
+  -> ImpactCategoryDef       (lcia_categories/{uuid}.json)
+       -> ImpactFactorDef    (array dentro da categoria)
+            -> FlowDef       (flows/{uuid}.json)
+                 -> FlowPropertyDef  (flow_properties/{uuid}.json)
+                      -> UnitGroupDef (unit_groups/{uuid}.json)
+                           -> UnitDef (units/{uuid}.json)
+\end{lstlisting}
+
+\textbf{Classes e seus campos cr\'iticos:}
+
+\begin{longtable}{p{3.5cm}p{3.5cm}p{7cm}}
+\toprule
+\textbf{Classe} & \textbf{Campos principais} & \textbf{Fun\c{c}\~ao} \\
+\midrule
+\endhead
+\texttt{UnitDef} & name, uid & Unidade f\'isica (kg, DALY, mol H$^+$-Eq) \\
+\addlinespace
+\texttt{UnitGroupDef} & name, unit, category, uid & Agrupamento de unidades compat\'iveis. Campo cr\'itico: \texttt{isReferenceUnit = True} \\
+\addlinespace
+\texttt{FlowPropertyDef} & name, unit\_group, uid & Grandeza f\'isica (Mass, Volume). Referencia o UnitGroup por UUID \\
+\addlinespace
+\texttt{FlowDef} & name, category, flow\_property, uid & Fluxo elementar. \texttt{flowType = ELEMENTARY\_FLOW}. UUID pode ser reaproveitado do Ecoinvent \\
+\addlinespace
+\texttt{ImpactFactorDef} & value, flow, input\_unit & Fator de caracteriza\c{c}\~ao. N\~ao gera arquivo pr\'oprio --- fica dentro da categoria \\
+\addlinespace
+\texttt{ImpactCategoryDef} & name, ref\_unit, impact\_factors[] & Categoria de impacto. Cont\'em o array com todos os CFs \\
+\addlinespace
+\texttt{ImpactMethodDef} & name, categories[] & Entidade de n\'ivel mais alto. Referencia categorias por UUID \\
+\addlinespace
+\texttt{MethodConfig} & (14 campos) & Configura\c{c}\~ao parseada do YAML. Consumida pelo converter \\
+\bottomrule
+\end{longtable}
+
+Cada classe possui um m\'etodo \texttt{to\_dict()} que produz o dicion\'ario Python correspondente ao JSON final. Exemplo de sa\'ida para \texttt{FlowDef}:
+
+\begin{lstlisting}[style=json]
+{
+  "@type": "Flow",
+  "@id": "9990b51b-7023-4700-bca0-1a32ef921f74",
+  "name": "Ammonia",
+  "category": "Elementary flows/Emission to air/unspecified",
+  "flowType": "ELEMENTARY_FLOW",
+  "flowProperties": [{
+    "isRefFlowProperty": true,
+    "conversionFactor": 1.0,
+    "flowProperty": { "@id": "da35b4a9-..." }
+  }]
+}
+\end{lstlisting}
+
+\subsection{M\'odulo validator.py --- Valida\c{c}\~ao de entrada}
+
+Garante que os dados estejam corretos \textbf{antes} da convers\~ao (padr\~ao \textit{fail-fast}).
+
+\textbf{Cadeia de valida\c{c}\~oes da fun\c{c}\~ao \texttt{validate\_excel()}:}
+
+\begin{enumerate}
+    \item Arquivo existe no disco
+    \item Extens\~ao \'e \texttt{.xlsx} ou \texttt{.xls}
+    \item pandas consegue ler o arquivo sem erro
+    \item Todas as colunas obrigat\'orias est\~ao presentes
+    \item Coluna Factor cont\'em apenas valores num\'ericos (\texttt{int} ou \texttt{float})
+    \item Coluna Flow n\~ao possui c\'elulas vazias ou nulas
+\end{enumerate}
+
+A fun\c{c}\~ao \texttt{validate\_config\_paths()} verifica os caminhos de arquivo referenciados no YAML: o Excel \'e obrigat\'orio; \texttt{reference\_zip} e \texttt{model\_zip} s\~ao opcionais (retornam warnings se ausentes).
+
+\subsection{M\'odulo converter.py --- Motor de convers\~ao}
+
+\subsubsection{Fun\c{c}\~oes auxiliares}
+
+\begin{description}
+    \item[\texttt{\_write\_json(directory, uid, data)}] Escreve \texttt{\{uid\}.json} com \texttt{indent=2} e \texttt{ensure\_ascii=False}.
+
+    \item[\texttt{\_load\_reference\_flows(ref\_zip)}] Carrega UUIDs de flows de uma base de refer\^encia. Algoritmo: (1) aceita ZIP ou diret\'orio; (2) busca pasta \texttt{flows/} na raiz ou recursivamente via \texttt{rglob}; (3) para cada JSON de Flow, extrai \texttt{(name, category) $\rightarrow$ @id}; (4) limpa pasta tempor\'aria no bloco \texttt{finally}. Retorna \texttt{dict[(str, str), str]}.
+
+    \item[\texttt{\_extract\_model\_base(model\_zip, temp\_dir)}] Extrai estrutura base do modelo. Detecta e achata pastas-wrapper (ex: \texttt{RAICV-Brazil-modelo/} dentro do ZIP).
+\end{description}
+
+\subsubsection{Pipeline principal: \texttt{convert(config)}}
+
+A fun\c{c}\~ao \texttt{convert()} orquestra 12 etapas sequenciais em uma pasta tempor\'aria (\texttt{\_olca\_build\_\{PID\}/}) que \'e removida no bloco \texttt{finally}:
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{clX}
+\toprule
+\textbf{Step} & \textbf{A\c{c}\~ao} & \textbf{Artefato gerado} \\
+\midrule
+1 & Extrair modelo base & Pasta tempor\'aria com estrutura \\
+2 & Carregar IDs de refer\^encia & Dict \texttt{(name, cat) $\rightarrow$ UUID} \\
+3 & Ler e validar Excel & DataFrame com CFs \\
+4 & Criar unidades de entrada & \texttt{units/\{uuid\}.json} (ex: kg) \\
+5 & Criar unidades de sa\'ida & \texttt{units/\{uuid\}.json} (ex: DALY) \\
+6 & Escrever unidades, grupos, propriedades & 6 arquivos JSON \\
+7 & Criar flows (reusando IDs) & \texttt{flows/\{uuid\}.json} ($\times$ N) \\
+8 & Construir mapa de UUIDs & Dict \texttt{(name, cat, loc) $\rightarrow$ UUID} \\
+9 & Criar categoria com todos os CFs & \texttt{lcia\_categories/\{uuid\}.json} \\
+10 & Criar m\'etodo LCIA & \texttt{lcia\_methods/\{uuid\}.json} \\
+11 & Escrever manifesto & \texttt{openlca.json} \\
+12 & Empacotar em ZIP & Arquivo \texttt{.zip} final \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection{Algoritmo de reuso de UUIDs (Step 7)}
+
+\begin{lstlisting}[style=python]
+# Para cada par unico (flow_name, category) na planilha:
+flow_id = existing_flows.get((flow_name, category), new_uuid())
+# Se encontrado no Ecoinvent -> reusa UUID
+# Se nao encontrado -> gera UUID v4 novo
+\end{lstlisting}
+
+O matching \'e \textit{case-sensitive} e exige correspond\^encia exata. A deduplicac\c{c}\~ao \'e feita por \texttt{(nome, categoria)}, n\~ao por \texttt{(nome, categoria, localiza\c{c}\~ao)}, pois no OpenLCA a regionaliza\c{c}\~ao ocorre no n\'ivel do fator, n\~ao do fluxo.
+
+\subsection{M\'odulo cli.py --- Interface de linha de comando}
+
+Implementa tr\^es comandos via \texttt{argparse}:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lll}
+\toprule
+\textbf{Comando} & \textbf{Fun\c{c}\~ao} & \textbf{Descri\c{c}\~ao} \\
+\midrule
+\texttt{olca-cf convert \{config\}} & \texttt{cmd\_convert()} & Pipeline completo \\
+\texttt{olca-cf validate \{excel\}} & \texttt{cmd\_validate()} & Valida planilha \\
+\texttt{olca-cf init [-o path]} & \texttt{cmd\_init()} & Gera template YAML \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Resolu\c{c}\~ao de caminhos:} Todos os paths no YAML s\~ao resolvidos relativamente ao diret\'orio do arquivo config. Caminhos absolutos s\~ao usados diretamente.
+
+\subsection{Formato de sa\'ida --- Pacote ZIP}
+
+\subsubsection{Estrutura}
+
+\begin{lstlisting}
+output.zip
++-- openlca.json                    # {"schemaVersion": 2}
++-- units/
+|   +-- {uuid-kg}.json              # Unidade de entrada
+|   +-- {uuid-daly}.json            # Unidade de saida
++-- unit_groups/
+|   +-- {uuid-mass-group}.json
+|   +-- {uuid-impact-group}.json
++-- flow_properties/
+|   +-- {uuid-mass-prop}.json
+|   +-- {uuid-impact-prop}.json
++-- flows/
+|   +-- {uuid-flow-1}.json          # 1 arquivo por (substancia, compartimento)
+|   +-- {uuid-flow-2}.json
+|   +-- ...                         # Centenas de arquivos
++-- lcia_categories/
+|   +-- {uuid-category}.json        # Contem array impactFactors[]
++-- lcia_methods/
+    +-- {uuid-method}.json           # Referencia a categoria por UUID
+\end{lstlisting}
+
+\subsubsection{Encadeamento de UUIDs}
+
+Se qualquer refer\^encia apontar para um UUID inexistente no pacote, o OpenLCA ignora silenciosamente a entidade. Este \'e o erro mais comum em pacotes JSON-LD manuais --- e a raz\~ao pela qual a ferramenta gera todos os UUIDs de forma coordenada.
+
+\subsection{Su\'ite de testes}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{llr}
+\toprule
+\textbf{Arquivo} & \textbf{Cobertura} & \textbf{Testes} \\
+\midrule
+\texttt{test\_schemas.py} & Serializa\c{c}\~ao JSON-LD de cada entidade & 6 \\
+\texttt{test\_validator.py} & 6 cen\'arios de erro de valida\c{c}\~ao & 6 \\
+\texttt{test\_converter.py} & Pipeline, deduplicac\c{c}\~ao, reuso IDs, midpoint & 8 \\
+\texttt{test\_cli.py} & Comandos help, version, init (via subprocess) & 3 \\
+\midrule
+\textbf{Total} & & \textbf{23} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Execu\c{c}\~ao: \lstinline[style=bash]{pytest tests/ -v} --- resultado esperado: \texttt{23 passed}.
+
+\subsection{Decis\~oes de design}
+
+\begin{description}
+    \item[Dataclasses vs dicion\'arios:] Dataclasses fornecem tipagem est\'atica e garantem campos obrigat\'orios. O custo \'e m\'inimo (1 m\'etodo \texttt{to\_dict()} por classe).
+
+    \item[YAML vs JSON para configura\c{c}\~ao:] YAML suporta coment\'arios (essencial para usu\'arios n\~ao-programadores) e \'e o padr\~ao em ferramentas cient\'ificas.
+
+    \item[Dataclasses pr\'oprias vs olca-schema:] O pacote \texttt{olca-schema} da GreenDelta adiciona depend\^encia pesada para um caso de uso simples. A abordagem pr\'opria \'e mais leve, transparente e educativa.
+
+    \item[PID nas pastas tempor\'arias:] Evita colis\~oes entre execu\c{c}\~oes paralelas em pipelines de CI/CD ou scripts de batch.
+
+    \item[Fail-fast na valida\c{c}\~ao:] A valida\c{c}\~ao antecipada garante que nenhum arquivo seja criado se os dados de entrada forem inv\'alidos. Um erro na linha 500 do Excel n\~ao resulta em pacote parcialmente gerado.
+
+    \item[Deduplicac\c{c}\~ao por (nome, categoria):] No modelo OpenLCA, a regionaliza\c{c}\~ao ocorre no n\'ivel do fator, n\~ao do fluxo. Criar flows separados por localiza\c{c}\~ao quebraria a compatibilidade com o Ecoinvent.
+\end{description}

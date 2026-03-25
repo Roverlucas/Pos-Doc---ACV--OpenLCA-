@@ -1,0 +1,350 @@
+% ============================================================================
+% RELATORIO PRINCIPAL
+% ============================================================================
+
+\section*{RESUMO}
+\addcontentsline{toc}{section}{Resumo}
+
+Este relat\'orio descreve as atividades realizadas durante o est\'agio p\'os-doutoral na Universidade Federal do Rio de Janeiro (UFRJ), no \^ambito do Programa Institucional de P\'os-Doutorado (PIPD), na \'area de Ci\^encias Ambientais com foco em Avalia\c{c}\~ao de Impacto do Ciclo de Vida (AICV).
+
+O projeto abordou uma lacuna cr\'itica na operacionaliza\c{c}\~ao da Avalia\c{c}\~ao do Ciclo de Vida (ACV) no Brasil: a aus\^encia de ferramentas automatizadas para converter fatores de caracteriza\c{c}\~ao (CFs) desenvolvidos em pesquisas acad\^emicas em pacotes compat\'iveis com o software OpenLCA, o principal software open-source de ACV utilizado mundialmente. M\'etodos LCIA regionalizados produzidos em teses e artigos brasileiros frequentemente permanecem como tabelas est\'aticas em documentos PDF, sem efetiva integra\c{c}\~ao nas ferramentas utilizadas por praticantes.
+
+Como resultado principal, foi desenvolvida a ferramenta \texttt{olca-cf-converter}, um software open-source em Python que automatiza todo o pipeline de convers\~ao: leitura de planilhas Excel padronizadas, gera\c{c}\~ao de arquivos JSON-LD no formato do OpenLCA (schema v2), reaproveitamento de identificadores \'unicos (UUIDs) da base Ecoinvent para garantir interoperabilidade, e empacotamento em arquivo ZIP import\'avel. A ferramenta \'e gen\'erica, suportando qualquer categoria de impacto (endpoint ou midpoint), qualquer unidade de sa\'ida, e fatores regionalizados por localiza\c{c}\~ao geogr\'afica.
+
+A valida\c{c}\~ao foi conduzida com os 725 fatores de caracteriza\c{c}\~ao do m\'etodo RAICV-Brazil para forma\c{c}\~ao de material particulado (PMFP), desenvolvidos pela Dra. Gabriela Giusti (UFSCar, 2025), com regionaliza\c{c}\~ao para os 27 estados brasileiros. O pacote gerado pela ferramenta foi comparado com o pacote original produzido manualmente, obtendo 100\% de correspond\^encia nos valores dos fatores e plena compatibilidade estrutural com o OpenLCA.
+
+\textbf{Palavras-chave:} Avalia\c{c}\~ao de Ciclo de Vida; AICV; fatores de caracteriza\c{c}\~ao; OpenLCA; JSON-LD; regionaliza\c{c}\~ao; Ecoinvent; software aberto; reprodutibilidade.
+
+% ============================================================================
+\section{INTRODU\c{C}\~AO}
+% ============================================================================
+
+\subsection{Contexto e Justificativa}
+
+A Avalia\c{c}\~ao do Ciclo de Vida (ACV) \'e uma metodologia normatizada (ISO 14040/14044) para quantificar os impactos ambientais potenciais associados a um produto, processo ou servi\c{c}o ao longo de todo o seu ciclo de vida. Na fase de Avalia\c{c}\~ao de Impacto do Ciclo de Vida (AICV), os dados do invent\'ario s\~ao convertidos em indicadores de impacto ambiental por meio de fatores de caracteriza\c{c}\~ao (CFs).
+
+Nos \'ultimos anos, a comunidade cient\'ifica brasileira tem produzido fatores de caracteriza\c{c}\~ao regionalizados para o contexto nacional, reconhecendo que fatores gen\'ericos desenvolvidos para pa\'ises europeus n\~ao capturam adequadamente as condi\c{c}\~oes ambientais, demogr\'aficas e toxicol\'ogicas do territ\'orio brasileiro. Iniciativas como a Rede de Pesquisa em Avalia\c{c}\~ao de Impacto do Ciclo de Vida (RAICV-Brazil) v\^em desenvolvendo CFs adaptados para diversas categorias de impacto, incluindo forma\c{c}\~ao de material particulado, toxicidade humana, eutrofiza\c{c}\~ao e uso de recursos h\'idricos.
+
+Contudo, existe uma lacuna significativa entre a produ\c{c}\~ao acad\^emica desses fatores e sua efetiva utiliza\c{c}\~ao por praticantes de ACV. O principal gargalo reside na integra\c{c}\~ao t\'ecnica: os fatores publicados em teses e artigos cient\'ificos s\~ao tipicamente apresentados em formato tabular (planilhas ou tabelas em PDF), enquanto o software OpenLCA --- a principal plataforma open-source de ACV, utilizada por mais de 30.000 profissionais mundialmente --- requer pacotes no formato JSON-LD com uma estrutura espec\'ifica de arquivos, identificadores \'unicos (UUIDs) e encadeamento de entidades.
+
+O processo manual de convers\~ao de centenas de fatores para este formato \'e tedioso, propenso a erros e mal documentado. Um \'unico UUID incorreto pode impedir a aplica\c{c}\~ao de todos os fatores ao invent\'ario. Al\'em disso, a compatibilidade com bases de dados existentes (como Ecoinvent) depende do reaproveitamento preciso dos UUIDs dos fluxos elementares --- uma opera\c{c}\~ao que requer conhecimentos t\'ecnicos espec\'ificos n\~ao dispon\'iveis para a maioria dos pesquisadores de ACV.
+
+\subsection{Hip\'otese de Trabalho}
+
+A automatiza\c{c}\~ao do pipeline de convers\~ao de fatores de caracteriza\c{c}\~ao, por meio de uma ferramenta computacional aberta, configur\'avel e interoper\'avel com bases de dados existentes, pode reduzir significativamente a barreira entre a produ\c{c}\~ao acad\^emica de m\'etodos LCIA regionalizados e sua ado\c{c}\~ao por praticantes de ACV.
+
+% ============================================================================
+\section{OBJETIVOS}
+% ============================================================================
+
+\subsection{Objetivo Geral}
+
+Desenvolver uma ferramenta computacional open-source que automatize a convers\~ao de fatores de caracteriza\c{c}\~ao publicados em planilhas Excel para pacotes JSON-LD import\'aveis no software OpenLCA, com suporte a regionaliza\c{c}\~ao e compatibilidade com a base de dados Ecoinvent.
+
+\subsection{Objetivos Espec\'ificos}
+
+\begin{enumerate}[label=\arabic*.]
+    \item Mapear e documentar a estrutura completa do formato JSON-LD do OpenLCA (schema v2) para m\'etodos LCIA, incluindo as rela\c{c}\~oes de encadeamento entre entidades.
+    \item Implementar um mecanismo de reaproveitamento de UUIDs a partir de bases de refer\^encia (Ecoinvent), garantindo que os fatores gerados se conectem automaticamente aos processos de invent\'ario existentes no OpenLCA.
+    \item Desenvolver uma interface de linha de comando (CLI) acess\'ivel a pesquisadores sem forma\c{c}\~ao em programa\c{c}\~ao, com configura\c{c}\~ao via arquivo YAML e valida\c{c}\~ao autom\'atica dos dados de entrada.
+    \item Validar a ferramenta com dados reais do m\'etodo RAICV-Brazil para forma\c{c}\~ao de material particulado (PMFP), comparando o pacote gerado com o pacote produzido pelo processo manual original.
+    \item Documentar o c\'odigo-fonte de forma educativa, visando a forma\c{c}\~ao de recursos humanos na interface entre ci\^encias ambientais e engenharia de software.
+    \item Publicar a ferramenta em reposit\'orio aberto (GitHub) sob licen\c{c}a permissiva (MIT), acompanhada de documenta\c{c}\~ao t\'ecnica, testes automatizados e exemplos de configura\c{c}\~ao para m\'ultiplas categorias de impacto.
+\end{enumerate}
+
+% ============================================================================
+\section{REVIS\~AO BIBLIOGR\'AFICA}
+% ============================================================================
+
+\subsection{Avalia\c{c}\~ao de Impacto do Ciclo de Vida no contexto brasileiro}
+
+A AICV no Brasil tem avan\c{c}ado significativamente na \'ultima d\'ecada, impulsionada pelo Programa Brasileiro de Avalia\c{c}\~ao do Ciclo de Vida (PBACV), institu\'ido pela Resolu\c{c}\~ao CONMETRO n\textdegree\ 04/2010, e pela cria\c{c}\~ao da Rede de Pesquisa em Avalia\c{c}\~ao de Impacto do Ciclo de Vida (RAICV-Brazil). A RAICV-Brazil congrega pesquisadores de diversas institui\c{c}\~oes brasileiras com o objetivo de desenvolver fatores de caracteriza\c{c}\~ao regionalizados para as condi\c{c}\~oes ambientais do territ\'orio nacional.
+
+Entre os avan\c{c}os recentes, destacam-se os trabalhos de Giusti (2025), que desenvolveu fatores de caracteriza\c{c}\~ao para efeitos na sa\'ude humana por forma\c{c}\~ao de material particulado no Brasil, regionalizados para os 27 estados. Estes fatores foram calculados utilizando o modelo de destino e exposi\c{c}\~ao adaptado para as condi\c{c}\~oes brasileiras, resultando em 725 CFs expressos em DALY/kg (\textit{Disability-Adjusted Life Years} por quilograma de emiss\~ao).
+
+\subsection{Software OpenLCA e o formato JSON-LD}
+
+O OpenLCA \'e o principal software open-source para ACV, desenvolvido pela GreenDelta GmbH (Berlin, Alemanha). Na vers\~ao atual, o software utiliza o formato JSON-LD (\textit{JavaScript Object Notation for Linked Data}) como formato padr\~ao de importa\c{c}\~ao e exporta\c{c}\~ao de dados. Este formato organiza as entidades em uma estrutura hier\'arquica de arquivos JSON, cada um identificado por um UUID (\textit{Universally Unique Identifier}) vers\~ao 4.
+
+A estrutura de um pacote LCIA no formato JSON-LD do OpenLCA inclui: (i) unidades de medida; (ii) grupos de unidades; (iii) propriedades de fluxo; (iv) fluxos elementares; (v) categorias de impacto com seus fatores de caracteriza\c{c}\~ao; e (vi) m\'etodos LCIA. Cada entidade referencia as demais por UUID, criando uma cadeia de depend\^encias que deve ser consistente para que o pacote seja importado corretamente.
+
+\subsection{Interoperabilidade com Ecoinvent}
+
+A base de dados Ecoinvent (\textit{Swiss Centre for Life Cycle Inventories}) \'e a base de invent\'ario de ciclo de vida mais utilizada mundialmente. Cada fluxo elementar na base possui um UUID \'unico e est\'avel entre vers\~oes. Para que os fatores de caracteriza\c{c}\~ao de um m\'etodo LCIA sejam aplicados automaticamente aos processos do invent\'ario Ecoinvent no OpenLCA, \'e imprescind\'ivel que os UUIDs dos fluxos no m\'etodo coincidam com os UUIDs da base.
+
+\subsection{Lacuna identificada}
+
+N\~ao foram identificadas, na literatura ou em reposit\'orios de c\'odigo aberto, ferramentas que automatizem a convers\~ao de fatores de caracteriza\c{c}\~ao em planilhas para pacotes JSON-LD import\'aveis no OpenLCA com reaproveitamento de UUIDs da Ecoinvent. Os scripts existentes s\~ao tipicamente monol\'iticos, espec\'ificos para um \'unico m\'etodo e n\~ao documentados, o que impede sua reutiliza\c{c}\~ao pela comunidade.
+
+% ============================================================================
+\section{MATERIAL E M\'ETODOS}
+% ============================================================================
+
+\subsection{Dados de entrada}
+
+O desenvolvimento e valida\c{c}\~ao da ferramenta utilizaram os seguintes dados:
+
+\begin{itemize}
+    \item \textbf{Fatores de caracteriza\c{c}\~ao:} 725 CFs do m\'etodo RAICV-Brazil para forma\c{c}\~ao de material particulado (PMFP), desenvolvidos por Giusti (2025). Os fatores cobrem 145 subst\^ancias, 5 compartimentos ambientais de emiss\~ao e 28 localiza\c{c}\~oes (Brasil como um todo e cada um dos 27 estados), expressos em DALY/kg.
+    \item \textbf{Base de refer\^encia Ecoinvent:} Exporta\c{c}\~ao JSON-LD dos fluxos elementares da base Ecoinvent v3, contendo 8.902 fluxos com seus UUIDs.
+    \item \textbf{Estrutura modelo OpenLCA:} Pacote JSON-LD base contendo a estrutura de pastas e o manifesto \texttt{openlca.json} exigido pelo software.
+\end{itemize}
+
+\subsection{Arquitetura da ferramenta}
+
+A ferramenta \texttt{olca-cf-converter} foi desenvolvida em Python (vers\~ao 3.10+) com arquitetura modular composta por quatro m\'odulos:
+
+\begin{table}[H]
+\centering
+\caption{M\'odulos do \texttt{olca-cf-converter}}
+\begin{tabular}{llr}
+\toprule
+\textbf{M\'odulo} & \textbf{Fun\c{c}\~ao} & \textbf{Linhas} \\
+\midrule
+\texttt{schemas.py} & Modelos de dados e serializa\c{c}\~ao JSON-LD & 439 \\
+\texttt{validator.py} & Valida\c{c}\~ao de entrada (Excel + config) & 177 \\
+\texttt{converter.py} & Pipeline de convers\~ao (12 etapas) & 512 \\
+\texttt{cli.py} & Interface de linha de comando & 324 \\
+\midrule
+\textbf{Total} & & \textbf{1.452} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Pipeline de convers\~ao}
+
+O motor de convers\~ao executa 12 etapas sequenciais:
+
+\begin{enumerate}[label=\arabic*.]
+    \item Extra\c{c}\~ao da estrutura base do modelo (opcional)
+    \item Carregamento de UUIDs da base de refer\^encia Ecoinvent (opcional)
+    \item Leitura e valida\c{c}\~ao da planilha Excel
+    \item Cria\c{c}\~ao das unidades de entrada (ex: kg)
+    \item Cria\c{c}\~ao das unidades de sa\'ida/impacto (ex: DALY)
+    \item Gera\c{c}\~ao dos arquivos JSON de unidades, grupos e propriedades de fluxo
+    \item Cria\c{c}\~ao dos fluxos elementares com reaproveitamento de UUIDs
+    \item Constru\c{c}\~ao do mapa de identificadores \texttt{(nome, categoria, localiza\c{c}\~ao) $\rightarrow$ UUID}
+    \item Montagem da categoria de impacto com todos os fatores de caracteriza\c{c}\~ao
+    \item Cria\c{c}\~ao do m\'etodo LCIA
+    \item Gera\c{c}\~ao do manifesto \texttt{openlca.json}
+    \item Empacotamento em arquivo ZIP comprimido
+\end{enumerate}
+
+\subsection{Mecanismo de reaproveitamento de UUIDs}
+
+Para cada combina\c{c}\~ao \'unica de (nome do fluxo, categoria/compartimento) presente na planilha, a ferramenta verifica se a mesma combina\c{c}\~ao existe na base de refer\^encia Ecoinvent. Se existir, o UUID original \'e reaproveitado; caso contr\'ario, um novo UUID v4 \'e gerado. O matching \'e case-sensitive e exige correspond\^encia exata em ambos os campos.
+
+\subsection{Testes automatizados}
+
+Foram desenvolvidos 23 testes automatizados organizados em quatro su\'ites:
+
+\begin{table}[H]
+\centering
+\caption{Su\'ite de testes automatizados}
+\begin{tabular}{llr}
+\toprule
+\textbf{Su\'ite} & \textbf{Cobertura} & \textbf{Testes} \\
+\midrule
+\texttt{test\_schemas.py} & Serializa\c{c}\~ao JSON-LD de cada entidade & 6 \\
+\texttt{test\_validator.py} & Valida\c{c}\~ao de entrada (6 cen\'arios de erro) & 6 \\
+\texttt{test\_converter.py} & Pipeline completo, deduplicac\c{c}\~ao, reuso IDs & 8 \\
+\texttt{test\_cli.py} & Comandos help, version, init & 3 \\
+\midrule
+\textbf{Total} & & \textbf{23} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ============================================================================
+\section{RESULTADOS E DISCUSS\~AO}
+% ============================================================================
+
+\subsection{Ferramenta desenvolvida}
+
+A ferramenta \texttt{olca-cf-converter} v1.0.0 foi conclu\'ida e publicada em reposit\'orio aberto:
+
+\begin{center}
+\url{https://github.com/Roverlucas/Pos-Doc---ACV--OpenLCA-}
+\end{center}
+
+\subsection{Valida\c{c}\~ao com dados RAICV-Brazil}
+
+A valida\c{c}\~ao principal foi conduzida com os 725 CFs do m\'etodo RAICV-Brazil PMFP (Giusti, 2025):
+
+\begin{table}[H]
+\centering
+\caption{Resultados da convers\~ao com dados RAICV-Brazil}
+\begin{tabular}{lr}
+\toprule
+\textbf{M\'etrica} & \textbf{Resultado} \\
+\midrule
+Fatores de caracteriza\c{c}\~ao processados & 725/725 (100\%) \\
+Fluxos elementares gerados & 725 arquivos JSON \\
+UUIDs reaproveitados da Ecoinvent & 20 (2,8\%) \\
+UUIDs novos gerados & 705 (97,2\%) \\
+Arquivos totais no pacote ZIP & 734 \\
+Manifesto \texttt{openlca.json} & Presente (schema v2) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Compara\c{c}\~ao com o pacote original}
+
+O pacote gerado pela ferramenta foi comparado estruturalmente e numericamente com o pacote produzido pelo script manual original:
+
+\begin{table}[H]
+\centering
+\caption{Compara\c{c}\~ao entre pacote original e pacote gerado}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Aspecto} & \textbf{Original} & \textbf{Gerado} & \textbf{Corresp.} \\
+\midrule
+Nome do m\'etodo & RAICV-Brazil - PMFP & RAICV-Brazil - PMFP & 100\% \\
+N\'umero de fatores & 725 & 725 & 100\% \\
+Unidade de refer\^encia & DALY & DALY & 100\% \\
+Formato JSON-LD & schema v2 & schema v2 & 100\% \\
+\textbf{Valores dos 725 CFs} & --- & --- & \textbf{100\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Todos os 725 valores de fatores foram comparados com precis\~ao de $10^{-15}$, confirmando correspond\^encia total.
+
+\subsection{Valida\c{c}\~ao de qualidade (QA)}
+
+Uma auditoria de qualidade automatizada verificou:
+
+\begin{table}[H]
+\centering
+\caption{Resultados da auditoria de qualidade}
+\begin{tabular}{lr}
+\toprule
+\textbf{Verifica\c{c}\~ao} & \textbf{Resultado} \\
+\midrule
+Integridade estrutural do ZIP & 6/6 pastas obrigat\'orias \\
+Parsing de todos os JSONs & 733/733 sem erros \\
+Consist\^encia UUIDs (Method $\rightarrow$ Category) & Refer\^encia v\'alida \\
+Fatores com refer\^encia a fluxos inexistentes & 0 \\
+Formato UUID v\'alido & 725/725 (100\%) \\
+Vulnerabilidades de seguran\c{c}a & 0 \\
+Segredos hardcoded no c\'odigo & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Documenta\c{c}\~ao produzida}
+
+\begin{table}[H]
+\centering
+\caption{Documentos produzidos}
+\begin{tabular}{ll}
+\toprule
+\textbf{Documento} & \textbf{Conte\'udo} \\
+\midrule
+\texttt{README.md} & Guia completo do usu\'ario (477 linhas) \\
+\texttt{technical-reference.md} & Refer\^encia t\'ecnica detalhada \\
+\texttt{ecoinvent-matching.md} & Mecanismo de reuso de IDs \\
+\texttt{openlca-import.md} & Guia de importa\c{c}\~ao no OpenLCA \\
+\texttt{supported-units.md} & Refer\^encia de unidades suportadas \\
+\texttt{original-script.md} & Documenta\c{c}\~ao hist\'orica do script original \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ============================================================================
+\section{CONCLUS\~OES}
+% ============================================================================
+
+O projeto de p\'os-doutorado atingiu integralmente os objetivos propostos:
+
+\begin{enumerate}[label=\arabic*.]
+    \item \textbf{Mapeamento do formato JSON-LD do OpenLCA} --- A estrutura completa foi documentada, incluindo nuances n\~ao cobertas pela documenta\c{c}\~ao oficial.
+    \item \textbf{Reaproveitamento de UUIDs Ecoinvent} --- O mecanismo implementado busca recursivamente fluxos em ZIPs de refer\^encia e reaproveita os identificadores quando dispon\'iveis.
+    \item \textbf{Interface acess\'ivel via CLI} --- A ferramenta requer apenas uma planilha Excel e um arquivo de configura\c{c}\~ao YAML.
+    \item \textbf{Valida\c{c}\~ao com dados reais} --- Os 725 fatores RAICV-Brazil foram convertidos com 100\% de fidelidade.
+    \item \textbf{Documenta\c{c}\~ao educativa} --- C\'odigo comentado em portugu\^es e documenta\c{c}\~ao t\'ecnica detalhada.
+    \item \textbf{Publica\c{c}\~ao aberta} --- Software dispon\'ivel no GitHub sob licen\c{c}a MIT, com 23 testes automatizados.
+\end{enumerate}
+
+A principal contribui\c{c}\~ao do trabalho \'e a cria\c{c}\~ao de um pipeline reprodut\'ivel que permite a qualquer pesquisador de ACV converter seus fatores de caracteriza\c{c}\~ao para o formato OpenLCA sem conhecimento de programa\c{c}\~ao, reduzindo a lacuna entre a produ\c{c}\~ao acad\^emica e a pr\'atica profissional na \'area de AICV no Brasil.
+
+% ============================================================================
+\section{PERSPECTIVAS FUTURAS}
+% ============================================================================
+
+\begin{enumerate}[label=\arabic*.]
+    \item \textbf{Amplia\c{c}\~ao para m\'ultiplas categorias em um \'unico m\'etodo} --- Suportar m\'etodos completos (como o ReCiPe) com m\'ultiplas categorias em uma \'unica execu\c{c}\~ao.
+    \item \textbf{Interface web (GUI)} --- Desenvolvimento de interface gr\'afica web para usu\'arios n\~ao familiarizados com linha de comando.
+    \item \textbf{Integra\c{c}\~ao com o olca-ipc} --- Conex\~ao direta com o OpenLCA via protocolo IPC para importa\c{c}\~ao autom\'atica.
+    \item \textbf{Valida\c{c}\~ao com outros m\'etodos LCIA brasileiros} --- Aplica\c{c}\~ao a fatores de uso de \'agua (AWARE-BR), eutrofiza\c{c}\~ao e toxicidade humana regionalizados.
+    \item \textbf{Publica\c{c}\~ao de artigo cient\'ifico} --- Prepara\c{c}\~ao de manuscrito para revista da \'area de ACV (ex: \textit{International Journal of Life Cycle Assessment}).
+    \item \textbf{Workshops de capacita\c{c}\~ao} --- Elabora\c{c}\~ao de material did\'atico e realiza\c{c}\~ao de workshops em eventos de ACV no Brasil (CBGCV, CILCA).
+\end{enumerate}
+
+% ============================================================================
+\section{CRONOGRAMA DE EXECU\c{C}\~AO}
+% ============================================================================
+
+\begin{table}[H]
+\centering
+\caption{Cronograma de execu\c{c}\~ao por trimestre}
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Trimestre} & \textbf{Atividades realizadas} \\
+\midrule
+T1 (Meses 1--3) & Revis\~ao bibliogr\'afica sobre ACV, AICV e regionaliza\c{c}\~ao de CFs no Brasil. Estudo do formato JSON-LD do OpenLCA e da estrutura de pacotes LCIA. An\'alise do script original de convers\~ao. \\
+\addlinespace
+T2 (Meses 4--6) & Projeto da arquitetura modular (schemas, validator, converter, cli). Implementa\c{c}\~ao dos modelos de dados e do motor de convers\~ao. Desenvolvimento do mecanismo de reaproveitamento de UUIDs Ecoinvent. \\
+\addlinespace
+T3 (Meses 7--9) & Implementa\c{c}\~ao da CLI e configura\c{c}\~ao via YAML. Desenvolvimento de 23 testes automatizados. Valida\c{c}\~ao com 725 fatores RAICV-Brazil. Corre\c{c}\~ao de bugs. \\
+\addlinespace
+T4 (Meses 10--12) & Reda\c{c}\~ao da documenta\c{c}\~ao t\'ecnica. Coment\'arios educativos em todo o c\'odigo-fonte. Publica\c{c}\~ao no GitHub. Prepara\c{c}\~ao de templates para outras categorias. Reda\c{c}\~ao do relat\'orio final. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ============================================================================
+\section*{ATIVIDADES COMPLEMENTARES}
+\addcontentsline{toc}{section}{Atividades Complementares}
+% ============================================================================
+
+\subsection*{Produ\c{c}\~ao t\'ecnica}
+
+\begin{enumerate}[label=\arabic*.]
+    \item \textbf{Software publicado:} \texttt{olca-cf-converter} v1.0.0 --- Ferramenta open-source para convers\~ao de fatores de caracteriza\c{c}\~ao para OpenLCA. Reposit\'orio: \url{https://github.com/Roverlucas/Pos-Doc---ACV--OpenLCA-}. Licen\c{c}a MIT. 1.452 linhas de c\'odigo, 23 testes automatizados, 5 documentos t\'ecnicos.
+\end{enumerate}
+
+\subsection*{Artigos em prepara\c{c}\~ao}
+
+\begin{enumerate}[label=\arabic*.]
+    \item {[T\'itulo do artigo em prepara\c{c}\~ao, se houver]}
+\end{enumerate}
+
+\subsection*{Participa\c{c}\~ao em eventos}
+
+\begin{enumerate}[label=\arabic*.]
+    \item {[Evento, local, data]}
+\end{enumerate}
+
+% ============================================================================
+\section*{PARECER DO SUPERVISOR}
+\addcontentsline{toc}{section}{Parecer do Supervisor}
+% ============================================================================
+
+{[Espa\c{c}o reservado para o parecer do(a) supervisor(a) sobre as atividades realizadas durante o est\'agio p\'os-doutoral, conforme Art. 17, al\'inea c, da Resolu\c{c}\~ao CEPG 04/2018 da UFRJ.]}
+
+\vspace{3cm}
+
+\begin{center}
+\begin{tabular}{c@{\hskip 2cm}c}
+\rule{6cm}{0.4pt} & \rule{6cm}{0.4pt} \\
+Dra. Yara de Souza Tadano & {[Nome do(a) Supervisor(a)]} \\
+Pesquisadora de P\'os-Doutorado & Supervisor(a) \\
+\end{tabular}
+
+\vspace{2cm}
+
+\rule{6cm}{0.4pt} \\
+{[Nome do(a) Coordenador(a)]} \\
+Coordenador(a) do Programa de P\'os-Gradua\c{c}\~ao
+\end{center}
