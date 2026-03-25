@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project temp
+_olca_build_*/
+_ref_temp_*/
+output/*.zip
+
+# Keep output dir but not generated ZIPs
+!output/.gitkeep

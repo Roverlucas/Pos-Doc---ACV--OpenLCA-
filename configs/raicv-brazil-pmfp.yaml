@@ -1,0 +1,44 @@
+# =============================================================================
+# RAICV-Brazil — Particulate Matter Formation Potential (PMFP)
+# =============================================================================
+# Source: GIUSTI, Gabriela. Development of characterization factors for health
+#         effects of particulate matter in Brazil. 2025.
+#         Tese (Doutorado) — UFSCar, Sorocaba, 2025.
+#         https://repositorio.ufscar.br/handle/20.500.14289/22123
+# =============================================================================
+
+method:
+  name: "RAICV-Brazil - PMFP"
+  description: >
+    Method from RAICV-Brazil for PMFP (Giusti 2025). CFs are regionalized for
+    the Brazilian States. One CF per state. Replicated for all compartments,
+    except for low population density, long-term. The CFs for Brazil were
+    included as generic (global) CFs.
+
+category:
+  name: "particulate matter formation - PMFP"
+  description: "Characterization factors for PMFP - DALYs (RAICV Brazil - PM)"
+  type: endpoint
+
+units:
+  input:
+    name: kg
+    property: Mass
+  output:
+    name: DALY
+    property: "Impact on human health"
+
+files:
+  excel: "../examples/CF-DALY-Giusti-Flows.xlsx"
+  reference_zip: "../examples/Base-Ecoinvent.zip"
+  model_zip: "../examples/RAICV-Brazil-modelo.zip"
+  output_zip: "../output/RAICV-Brazil-FINAL.zip"
+
+# Column mapping (default values shown — change only if your Excel uses
+# different column names)
+columns:
+  flow: Flow
+  category: Category
+  factor: Factor
+  unit: Unit
+  location: Location

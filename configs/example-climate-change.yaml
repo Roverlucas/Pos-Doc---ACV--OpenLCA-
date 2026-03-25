@@ -1,0 +1,29 @@
+# =============================================================================
+# Example: Climate Change — Global Warming Potential (GWP)
+# =============================================================================
+# This is a TEMPLATE showing how to configure a midpoint climate change method.
+# Replace file paths and descriptions with your actual data.
+# =============================================================================
+
+method:
+  name: "My Climate Change Method"
+  description: "Global warming potentials adapted for [your region/context]."
+
+category:
+  name: "climate change - GWP100"
+  description: "Global warming potential over 100 years"
+  type: midpoint
+
+units:
+  input:
+    name: kg
+    property: Mass
+  output:
+    name: "kg CO2-Eq"
+    property: "Global warming potential"
+
+files:
+  excel: "../examples/my-gwp-factors.xlsx"
+  reference_zip: "../examples/Base-Ecoinvent.zip"
+  model_zip: null  # optional — creates structure from scratch
+  output_zip: "../output/My-GWP-Method.zip"

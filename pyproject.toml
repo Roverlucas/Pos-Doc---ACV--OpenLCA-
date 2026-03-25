@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "olca-cf-converter"
+version = "1.0.0"
+description = "Convert characterization factor spreadsheets into OpenLCA-importable JSON-LD ZIP packages."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    { name = "Lucas Rover", email = "lucasrover@alunos.utfpr.edu.br" },
+]
+keywords = ["lca", "openlca", "life-cycle-assessment", "characterization-factors", "lcia", "json-ld"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = [
+    "pandas>=2.0",
+    "openpyxl>=3.1",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+]
+
+[project.scripts]
+olca-cf = "olca_cf_converter.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/Roverlucas/pos-doc-acv-openlca"
+Repository = "https://github.com/Roverlucas/pos-doc-acv-openlca"
+Issues = "https://github.com/Roverlucas/pos-doc-acv-openlca/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

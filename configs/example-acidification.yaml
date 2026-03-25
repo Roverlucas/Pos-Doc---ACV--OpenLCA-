@@ -1,0 +1,29 @@
+# =============================================================================
+# Example: Acidification Potential (AP)
+# =============================================================================
+# Template for acidification impact category.
+# Demonstrates a midpoint method with mol H+-eq as output unit.
+# =============================================================================
+
+method:
+  name: "My Acidification Method"
+  description: "Regionalized acidification potentials for [your study area]."
+
+category:
+  name: "terrestrial acidification - TAP"
+  description: "Terrestrial acidification potential"
+  type: midpoint
+
+units:
+  input:
+    name: kg
+    property: Mass
+  output:
+    name: "mol H+-Eq"
+    property: "Acidification potential"
+
+files:
+  excel: "../examples/my-ap-factors.xlsx"
+  reference_zip: "../examples/Base-Ecoinvent.zip"
+  model_zip: null
+  output_zip: "../output/My-AP-Method.zip"
