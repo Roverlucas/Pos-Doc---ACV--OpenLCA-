@@ -190,14 +190,14 @@ Manifesto \texttt{openlca.json} & Presente (schema v2) \\
 
 \subsection{Compara\c{c}\~ao com o pacote original}
 
-O pacote gerado pela ferramenta foi comparado estruturalmente e numericamente com o pacote produzido pelo script manual original:
+O pacote gerado pela ferramenta foi comparado estruturalmente e numericamente com o pacote previamente gerado pelo script original (\texttt{FINAL-correto-reused-ids.py}), confirmando equival\^encia total:
 
 \begin{table}[H]
 \centering
-\caption{Compara\c{c}\~ao entre pacote original e pacote gerado}
+\caption{Compara\c{c}\~ao entre pacote gerado pelo script original e pela ferramenta}
 \begin{tabular}{lccc}
 \toprule
-\textbf{Aspecto} & \textbf{Original} & \textbf{Gerado} & \textbf{Corresp.} \\
+\textbf{Aspecto} & \textbf{Script original} & \textbf{olca-cf-converter} & \textbf{Corresp.} \\
 \midrule
 Nome do m\'etodo & RAICV-Brazil - PMFP & RAICV-Brazil - PMFP & 100\% \\
 N\'umero de fatores & 725 & 725 & 100\% \\
@@ -208,7 +208,7 @@ Formato JSON-LD & schema v2 & schema v2 & 100\% \\
 \end{tabular}
 \end{table}
 
-Todos os 725 valores de fatores foram comparados com precis\~ao de $10^{-15}$, confirmando correspond\^encia total.
+Todos os 725 valores de fatores foram comparados com precis\~ao de $10^{-15}$, confirmando que a refatora\c{c}\~ao modular preserva fidelidade num\'erica total ao pipeline original. Al\'em dessa valida\c{c}\~ao de equival\^encia, uma compara\c{c}\~ao funcional com m\'ultiplos m\'etodos de caracteriza\c{c}\~ao foi conduzida no OpenLCA (ver Anexo~\ref{anexo:comparacao-metodos}).
 
 \subsection{Valida\c{c}\~ao de qualidade (QA)}
 
