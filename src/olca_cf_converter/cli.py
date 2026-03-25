@@ -154,10 +154,15 @@ def cmd_convert(args: argparse.Namespace) -> None:
     print(f"  Excel:    {config.excel_path}")
     print()
 
-    # Valida que os arquivos referenciados existem
-    with open(args.config, "r") as f:
-        raw = yaml.safe_load(f)
-    warnings = validate_config_paths(raw)
+    # Valida que os arquivos referenciados existem (usando paths ja resolvidos)
+    resolved_files = {
+        "files": {
+            "excel": config.excel_path,
+            "reference_zip": config.reference_zip,
+            "model_zip": config.model_zip,
+        }
+    }
+    warnings = validate_config_paths(resolved_files)
     for w in warnings:
         print(f"  ⚠ {w}")
 

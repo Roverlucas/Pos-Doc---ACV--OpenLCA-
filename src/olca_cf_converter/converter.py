@@ -118,14 +118,24 @@ def _load_reference_flows(ref_zip: str | Path | None) -> dict[tuple[str, str], s
     try:
         # Aceita tanto ZIP quanto diretorio ja extraido
         if ref_zip.is_dir():
-            flows_dir = ref_zip / "flows"
+            search_root = ref_zip
         else:
             # Extrai o ZIP para pasta temporaria
             shutil.rmtree(ref_dir, ignore_errors=True)
             ref_dir.mkdir(exist_ok=True)
             with zipfile.ZipFile(ref_zip, "r") as zf:
                 zf.extractall(ref_dir)
-            flows_dir = ref_dir / "flows"
+            search_root = ref_dir
+
+        # Busca a pasta "flows/" — pode estar na raiz ou dentro de uma subpasta
+        # (ex: Base-Ecoinvent/flows/ quando o ZIP foi criado a partir de um diretorio)
+        flows_dir = search_root / "flows"
+        if not flows_dir.is_dir():
+            # Busca recursivamente por uma pasta chamada "flows" com arquivos JSON
+            for candidate in search_root.rglob("flows"):
+                if candidate.is_dir() and any(candidate.glob("*.json")):
+                    flows_dir = candidate
+                    break
 
         if not flows_dir.is_dir():
             print(f"  ⚠ No 'flows/' folder in reference. Generating new IDs.")
@@ -193,6 +203,19 @@ def _extract_model_base(model_zip: str | Path | None, temp_dir: Path) -> None:
     else:
         with zipfile.ZipFile(model_zip, "r") as zf:
             zf.extractall(temp_dir)
+
+    # Se o ZIP tinha uma pasta-raiz (ex: RAICV-Brazil-modelo/), move o conteudo
+    # para a raiz do temp_dir para manter a estrutura plana que o OpenLCA espera
+    subdirs = [d for d in temp_dir.iterdir() if d.is_dir()]
+    if len(subdirs) == 1 and (subdirs[0] / "openlca.json").exists():
+        wrapper = subdirs[0]
+        for item in wrapper.iterdir():
+            dest = temp_dir / item.name
+            if item.is_dir():
+                shutil.copytree(item, dest, dirs_exist_ok=True)
+            else:
+                shutil.copy2(item, dest)
+        shutil.rmtree(wrapper)
 
     print(f"  ✓ Base structure loaded from model")
 
